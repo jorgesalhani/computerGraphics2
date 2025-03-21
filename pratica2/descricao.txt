@@ -1,0 +1,1 @@
+Alterar código base para, ao invés de exibir caixa, exibir algum modelo de sua escolha. Pode ser preciso transladar o objeto para a origem e reescalá-lo para que ele apareça corretamente.

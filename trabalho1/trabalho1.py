@@ -2,9 +2,9 @@ import glfw
 from OpenGL.GL import *
 import numpy as np
 
-from keyControl import KeyControl
-from objectsControl import ObjectControl
-from transformControl import TransformControl
+from controlers.keyControl import KeyControl
+from controlers.objectsControl import ObjectControl
+from controlers.transformControl import TransformControl
 
 glfw.init()
 glfw.window_hint(glfw.VISIBLE, glfw.FALSE);

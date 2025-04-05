@@ -102,59 +102,22 @@ glVertexAttribPointer(loc, 3, GL_FLOAT, False, stride, offset)
 
 loc_color = glGetUniformLocation(program, "color")
 
-# incrementos para translacao
-x_inc = 0.0
-y_inc = 0.0
-
-# incrementos para rotacao
-r_inc = 0.0
-
-# coeficiente de escala
-s_inc = 1.0
-
 keyControl = KeyControl()
 
 def key_event(window,key,scancode,action,mods):
-    global x_inc, y_inc, r_inc, s_inc
-    
-    if key == 263: x_inc -= 0.0001 #esquerda
-    if key == 262: x_inc += 0.0001 #direita
-
-    if key == 265: y_inc += 0.0001 #cima
-    if key == 264: y_inc -= 0.0001 #baixo
-        
-    if key == 65: r_inc += 0.1 #letra a
-    if key == 83: r_inc -= 0.1 #letra s
-        
-    if key == 90: s_inc += 0.1 #letra z
-    if key == 88: s_inc -= 0.1 #letra x
-
     keyControl.action(window=window, key=key, action=action, objectsControl=objectsControl)
                    
 glfw.set_key_callback(window, key_event)
 glfw.show_window(window)
 
-anguloRotacao = 0.0
-
 glEnable(GL_DEPTH_TEST) ### importante para 3D
-
-t_x = 0
-t_y = 0
-
 while not glfw.window_should_close(window):
-
-    t_x += x_inc
-    t_y += y_inc
-    
-    anguloRotacao -= 0.001 # modifica o angulo de rotacao em cada iteracao
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)    
     glClearColor(1.0, 1.0, 1.0, 1.0)
 
     objectsControl.apply_transform(program, 'background')
     objectsControl.apply_transform(program, 'piramide')
-    # print(t_x, t_y)
-    # draw_objects()
     
     glfw.swap_buffers(window)
     glfw.poll_events()

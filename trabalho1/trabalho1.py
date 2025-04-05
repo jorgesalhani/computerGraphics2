@@ -1,12 +1,10 @@
 import glfw
 from OpenGL.GL import *
-import OpenGL.GL.shaders
 import numpy as np
-import glm
-import math
 
 from keyControl import KeyControl
 from objectsControl import ObjectControl
+from transformControl import TransformControl
 
 glfw.init()
 glfw.window_hint(glfw.VISIBLE, glfw.FALSE);
@@ -116,6 +114,13 @@ s_inc = 1.0
 
 keyControl = KeyControl()
 
+def draw_objects():
+    for face_color in faces_color:
+        r,g,b,a = face_color['rgb']
+        vi, vt = face_color['first'], face_color['total']
+        glUniform4f(loc_color, r, g, b, a)
+        glDrawArrays(GL_TRIANGLE_STRIP, vi, vt)
+
 def key_event(window,key,scancode,action,mods):
     global x_inc, y_inc, r_inc, s_inc
     
@@ -131,30 +136,14 @@ def key_event(window,key,scancode,action,mods):
     if key == 90: s_inc += 0.1 #letra z
     if key == 88: s_inc -= 0.1 #letra x
 
-    keyControl.set_key_pressed(key, action)
-        
-           
-glfw.set_key_callback(window,key_event)
-
+    keyControl.action(window=window, key=key, action=action)
+                   
+glfw.set_key_callback(window, key_event)
 glfw.show_window(window)
 
 anguloRotacao = 0.0
 
 glEnable(GL_DEPTH_TEST) ### importante para 3D
-
-def multiplica_matriz(a,b):
-    m_a = a.reshape(4,4)
-    m_b = b.reshape(4,4)
-    m_c = np.dot(m_a,m_b)
-    c = m_c.reshape(1,16)
-    return c
-
-def draw_objects():
-    for face_color in faces_color:
-        r,g,b,a = face_color['rgb']
-        vi, vt = face_color['first'], face_color['total']
-        glUniform4f(loc_color, r, g, b, a)
-        glDrawArrays(GL_TRIANGLE_STRIP, vi, vt)
 
 t_x = 0
 t_y = 0
@@ -163,80 +152,26 @@ while not glfw.window_should_close(window):
 
     t_x += x_inc
     t_y += y_inc
-
-    keyControl.action(window=window)
     
-    ### apenas para visualizarmos o cubo rotacionando
     anguloRotacao -= 0.001 # modifica o angulo de rotacao em cada iteracao
-    cos_d = math.cos(anguloRotacao)
-    sin_d = math.sin(anguloRotacao)
-    
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)    
     glClearColor(1.0, 1.0, 1.0, 1.0)
     
-    mat_rotation_z = np.array([     cos_d, -sin_d, 0.0, 0.0, 
-                                    sin_d,  cos_d, 0.0, 0.0, 
-                                    0.0,      0.0, 1.0, 0.0, 
-                                    0.0,      0.0, 0.0, 1.0], np.float32)
-    
-    mat_rotation_x = np.array([     1.0,   0.0,    0.0, 0.0, 
-                                    0.0, cos_d, -sin_d, 0.0, 
-                                    0.0, sin_d,  cos_d, 0.0, 
-                                    0.0,   0.0,    0.0, 1.0], np.float32)
-    
-    mat_rotation_y = np.array([     cos_d,  0.0, sin_d, 0.0, 
-                                    0.0,    1.0,   0.0, 0.0, 
-                                    -sin_d, 0.0, cos_d, 0.0, 
-                                    0.0,    0.0,   0.0, 1.0], np.float32)
-    
-    mat_translacao = np.array([     1.0,  0.0, 0.0,     t_x, 
-                                    0.0,    1.0,   0.0, t_y, 
-                                    0.0,    0.0,   1.0, 0.0, 
-                                    0.0,    0.0,   0.0, 1.0], np.float32)
-
+    mat_rotation_x = TransformControl.rotation_x(anguloRotacao)
+    mat_rotation_y = TransformControl.rotation_y(anguloRotacao)
+    mat_rotation_z = TransformControl.rotation_z(anguloRotacao)
+    mat_translacao = TransformControl.translation(t=(t_x, t_y, 0))
 
     # sequencia de transformações: rotação z, rotação y, rotação x, translação
-    mat_transform = multiplica_matriz(mat_rotation_z,mat_rotation_y)
-    mat_transform = multiplica_matriz(mat_rotation_x,mat_transform)
-    mat_transform = multiplica_matriz(mat_translacao,mat_transform) #translacao ultima
-
-
-    ########## Essa sequencia
-    #
-    #mat_transform = mat_rotation_x
-    #mat_transform = multiplica_matriz(mat_translacao,mat_transform)
-    #
-    ############# tem o mesmo efeito que essa (ambas executam a rotação_x e depois a translação)
-    #
-    #mat_transform = mat_translacao
-    #mat_transform = multiplica_matriz(mat_transform, mat_rotation_x)
+    mat_transform = TransformControl.multiplica_matriz(mat_rotation_z,mat_rotation_y)
+    mat_transform = TransformControl.multiplica_matriz(mat_rotation_x,mat_transform)
+    mat_transform = TransformControl.multiplica_matriz(mat_translacao,mat_transform) #translacao ultima
 
     loc_transformation = glGetUniformLocation(program, "mat_transformation")
     glUniformMatrix4fv(loc_transformation, 1, GL_TRUE, mat_transform) 
 
     draw_objects()
-    
-    # glUniform4f(loc_color, 0, 0, 1, 1.0) ### azul
-    # glDrawArrays(GL_TRIANGLE_STRIP, 4, 4)
-    
-    # glUniform4f(loc_color, 0, 1, 0, 1.0) ### verde
-    # glDrawArrays(GL_TRIANGLE_STRIP, 8, 4)
-    
-    # glUniform4f(loc_color, 1, 1, 0, 1.0) ### amarela
-    # glDrawArrays(GL_TRIANGLE_STRIP, 12, 4)
-    
-    # glUniform4f(loc_color, 0.5, 0.5, 0.5, 1.0) ### cinza
-    # glDrawArrays(GL_TRIANGLE_STRIP, 16, 4)
-    
-    # glUniform4f(loc_color, 0.5, 0, 0, 1.0) ### marrom
-    # glDrawArrays(GL_TRIANGLE_STRIP, 20, 4)
-
-    # glUniform4f(loc_color, 0.5, 0, 0, 1.0) ### marrom
-    # glDrawArrays(GL_TRIANGLE_STRIP, 24, 3)
-
-    # glUniform4f(loc_color, 1, 1, 0, 1.0) ### amarela
-    # glDrawArrays(GL_TRIANGLE_STRIP, 27, 3)
     
     glfw.swap_buffers(window)
     glfw.poll_events()

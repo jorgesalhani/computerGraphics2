@@ -114,13 +114,6 @@ s_inc = 1.0
 
 keyControl = KeyControl()
 
-def draw_objects():
-    for face_color in faces_color:
-        r,g,b,a = face_color['rgb']
-        vi, vt = face_color['first'], face_color['total']
-        glUniform4f(loc_color, r, g, b, a)
-        glDrawArrays(GL_TRIANGLE_STRIP, vi, vt)
-
 def key_event(window,key,scancode,action,mods):
     global x_inc, y_inc, r_inc, s_inc
     
@@ -136,7 +129,7 @@ def key_event(window,key,scancode,action,mods):
     if key == 90: s_inc += 0.1 #letra z
     if key == 88: s_inc -= 0.1 #letra x
 
-    keyControl.action(window=window, key=key, action=action)
+    keyControl.action(window=window, key=key, action=action, objectsControl=objectsControl)
                    
 glfw.set_key_callback(window, key_event)
 glfw.show_window(window)
@@ -158,8 +151,9 @@ while not glfw.window_should_close(window):
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)    
     glClearColor(1.0, 1.0, 1.0, 1.0)
 
-    objectsControl.apply_transform(program, 'background', angle=(anguloRotacao,0,0))
-    objectsControl.apply_transform(program, 'piramide', offset=(t_x,t_y,0))
+    objectsControl.apply_transform(program, 'background')
+    objectsControl.apply_transform(program, 'piramide')
+    # print(t_x, t_y)
     # draw_objects()
     
     glfw.swap_buffers(window)

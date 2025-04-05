@@ -54,7 +54,7 @@ class TransformControl:
                       0.0, 0.0, 0.0, 1.0], np.float32)
   
   @staticmethod
-  def scale(s = (0,0,0)):
+  def scale(s = (1,1,1)):
     sx = s[0] 
     sy = s[1] 
     sz = s[2]

@@ -66,7 +66,7 @@ if not glGetProgramiv(program, GL_LINK_STATUS):
 # Make program the default program
 glUseProgram(program)
 
-objectsControl = ObjectControl('../trabalho1/objects')
+objectsControl = ObjectControl('./trabalho1/objects')
 
 # preenchendo as coordenadas de cada vértice
 objectsControl.load_object('background.json')
@@ -157,21 +157,10 @@ while not glfw.window_should_close(window):
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)    
     glClearColor(1.0, 1.0, 1.0, 1.0)
-    
-    mat_rotation_x = TransformControl.rotation_x(anguloRotacao)
-    mat_rotation_y = TransformControl.rotation_y(anguloRotacao)
-    mat_rotation_z = TransformControl.rotation_z(anguloRotacao)
-    mat_translacao = TransformControl.translation(t=(t_x, t_y, 0))
 
-    # sequencia de transformações: rotação z, rotação y, rotação x, translação
-    mat_transform = TransformControl.multiplica_matriz(mat_rotation_z,mat_rotation_y)
-    mat_transform = TransformControl.multiplica_matriz(mat_rotation_x,mat_transform)
-    mat_transform = TransformControl.multiplica_matriz(mat_translacao,mat_transform) #translacao ultima
-
-    loc_transformation = glGetUniformLocation(program, "mat_transformation")
-    glUniformMatrix4fv(loc_transformation, 1, GL_TRUE, mat_transform) 
-
-    draw_objects()
+    objectsControl.apply_transform(program, 'background', angle=(anguloRotacao,0,0))
+    objectsControl.apply_transform(program, 'piramide', offset=(t_x,t_y,0))
+    # draw_objects()
     
     glfw.swap_buffers(window)
     glfw.poll_events()

@@ -7,7 +7,7 @@ from controlers.objectsControl import ObjectControl
 from controlers.transformControl import TransformControl
 
 glfw.init()
-glfw.window_hint(glfw.VISIBLE, glfw.FALSE);
+glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
 window = glfw.create_window(700, 700, "Programa", None, None)
 
 if (window == None):

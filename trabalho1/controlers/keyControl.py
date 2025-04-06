@@ -1,5 +1,7 @@
 import glfw
 from OpenGL.GL import *
+from .objectsControl import ObjectControl
+import numpy as np
 
 class KeyControl:
   def __init__(self):
@@ -23,11 +25,10 @@ class KeyControl:
       else:
         self.display_mash = True
 
-
   def close_window(self, window):
     glfw.set_window_should_close(window, True)
 
-  def action(self, window, key, action, objectsControl):
+  def action(self, window, key, action, objectsControl: ObjectControl):
     self.set_key_pressed(key, action)
     
     if self.key_pressed == glfw.KEY_P:
@@ -36,26 +37,25 @@ class KeyControl:
     if self.key_pressed == glfw.KEY_ESCAPE:
       self.close_window(window=window)
 
-    if self.key_pressed == glfw.KEY_A:
-      objectsControl.update_position(objName='piramide', offset = (-0.01,0,0))
+    if self.key_pressed == glfw.KEY_S:
+      objectsControl.update_position(objName='moon', offset = [0,-0.01,0])
 
-    if self.key_pressed == glfw.KEY_D:
-      objectsControl.update_position(objName='piramide', offset = (0.01,0,0))
-
-    if self.key_pressed == glfw.KEY_SPACE:
-      objectsControl.update_position(objName='piramide', offset = (0,0.01,0))
-
+    if self.key_pressed == glfw.KEY_RIGHT:
+      objectsControl.update_position(objName='lighthouse_top', offset = [-0.001,0,0])
+      objectsControl.update_position(objName='lighthouse', offset = [-0.001,0,0])
+      objectsControl.update_position(objName='rocks', offset = [-0.01,0,0])
+      objectsControl.update_position(objName='cloud', offset = [-0.0005,0,0])
+    
     if self.key_pressed == glfw.KEY_L:
-      objectsControl.update_position(objName='background', angle = (0.01,0,0))
+      objectsControl.update_position(objName='lighthouse_top', angle = [0,-0.01,0])
 
-    if self.key_pressed == glfw.KEY_K:
-      objectsControl.update_position(objName='background', angle = (0,0.01,0))
+    if self.key_pressed == glfw.KEY_G:
+      objectsControl.update_position(objName='lighthouse_top', scale = [0,0.01,0])
+    
+    if self.key_pressed == glfw.KEY_H:
+      objectsControl.update_position(objName='lighthouse_top', scale = [0,-0.01,0])
 
-    if self.key_pressed == glfw.KEY_M:
-      objectsControl.update_position(objName='background', scale = (0,0.01,0))
-
-    if self.key_pressed == glfw.KEY_N:
-      objectsControl.update_position(objName='background', scale = (0,-0.01,0))
+  
     
 
       

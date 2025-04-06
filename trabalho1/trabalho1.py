@@ -4,7 +4,7 @@ import numpy as np
 
 from controlers.keyControl import KeyControl
 from controlers.objectsControl import ObjectControl
-from controlers.transformControl import TransformControl
+from controlers.objectsBuildControl import ObjectsBuildControl
 
 glfw.init()
 glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
@@ -67,10 +67,20 @@ if not glGetProgramiv(program, GL_LINK_STATUS):
 glUseProgram(program)
 
 objectsControl = ObjectControl('./trabalho1/objects')
+objectsBuildControl = ObjectsBuildControl('./trabalho1/objects')
 
-# preenchendo as coordenadas de cada vértice
-objectsControl.load_object('background.json')
-objectsControl.load_object('piramide.json')
+objectsControl.load_object('rocks.json')
+objectsControl.load_object('floor.json')
+objectsControl.load_object('lighthouse.json')
+
+global_offset_moon = objectsBuildControl.build_moon()
+global_offset_lighhouse_top = objectsBuildControl.build_lighthouse_top()
+global_offset_cloud = objectsBuildControl.build_cloud()
+
+objectsControl.load_object('moon.json', global_offset_moon)
+objectsControl.load_object('dino.json')
+objectsControl.load_object('lighthouse_top.json', global_offset_lighhouse_top)
+objectsControl.load_object('cloud.json', global_offset_cloud)
 
 vertices_list = objectsControl.vertices_list['vertices']
 faces_color = objectsControl.faces_color
@@ -116,8 +126,13 @@ while not glfw.window_should_close(window):
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)    
     glClearColor(1.0, 1.0, 1.0, 1.0)
 
-    objectsControl.apply_transform(program, 'background')
-    objectsControl.apply_transform(program, 'piramide')
+    objectsControl.apply_transform(program, 'cloud')    
+    objectsControl.apply_transform(program, 'moon')
+    objectsControl.apply_transform(program, 'rocks')
+    objectsControl.apply_transform(program, 'floor')
+    objectsControl.apply_transform(program, 'dino')
+    objectsControl.apply_transform(program, 'lighthouse')
+    objectsControl.apply_transform(program, 'lighthouse_top')
     
     glfw.swap_buffers(window)
     glfw.poll_events()

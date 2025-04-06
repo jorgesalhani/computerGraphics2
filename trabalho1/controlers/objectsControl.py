@@ -4,6 +4,7 @@ from .transformControl import TransformControl
 import numpy as np
 import glfw
 from OpenGL.GL import *
+from .trajectories import Trajectories
 
 class ObjectControl(TransformControl) :
   def __init__(self, folder_path):
@@ -18,12 +19,10 @@ class ObjectControl(TransformControl) :
     self.object_list = []
     self.current_object_faces = {}
 
-  def load_object(self, filename):
+  def load_object(self, filename, global_offset = [0,0,0]):
     fullpath = f'{self.folder_path}/{filename}'
     if not os.path.isfile(fullpath):
       raise FileNotFoundError(f'Object file not found: {filename}')
-    
-    first_vert = len(self.vertices_list['vertices'])
     
     vi = len(self.vertices_list['vertices'])
     
@@ -38,7 +37,7 @@ class ObjectControl(TransformControl) :
       map_color_position = {
         'name': objName,
         'rgb': face['color'],
-        'first': first_vert,
+        'first': vi,
         'total': total_vertices
       }
       self.faces_color.append(map_color_position)
@@ -52,7 +51,8 @@ class ObjectControl(TransformControl) :
           'last': vi + total_vertices
         })
       
-      vf += total_vertices
+      vf = vi + total_vertices
+      vi += total_vertices
 
     self.object_list.append({
       'name': objName,
@@ -60,26 +60,41 @@ class ObjectControl(TransformControl) :
         'first': vi,
         'last': vf
       },
-      'global_offset': [0,0,0],
+      'global_offset': global_offset,
       'global_angle': [0,0,0],
       'global_scale': [1,1,1],
+      'global_dt': 0
     })
+    self.dt = 0.01
     return self.vertices_list
   
-  def update_position(self, objName, angle = (0,0,0), offset = (0,0,0), scale = (0,0,0)):
-    self.current_object = list(filter(lambda x : x['name'] == objName, self.object_list))[0]
-    if not self.current_object:
-      raise NameError(f'Object named {objName} not loaded')
-    
+  def get_trajectory(self, offset):
     g_offset = self.current_object['global_offset']
-    g_angle = self.current_object['global_angle']
-    g_scale = self.current_object['global_scale']
 
-    self.current_object['global_offset'] = [offset[0] + g_offset[0], offset[1] + g_offset[1], offset[2] + g_offset[2]]
-    self.current_object['global_angle'] = [angle[0] + g_angle[0], angle[1] + g_angle[1], angle[2] + g_angle[2]]
-    self.current_object['global_scale'] = [scale[0] + g_scale[0], scale[1] + g_scale[1], scale[2] + g_scale[2]]
+    if self.current_object['name'] == 'moon':
+      res = Trajectories.circle(g_offset, self.current_object['global_dt'])
+      self.current_object['global_dt'] += self.dt
+      return res
     
+    return Trajectories.linear(g_offset, offset)
   
+  def update_position(self, objName, angle = None, offset = None, scale = None):
+    curObj = list(filter(lambda x : x['name'] == objName, self.object_list))
+    if not curObj:
+      raise NameError(f'Object named {objName} not loaded')
+    self.current_object = curObj[0]
+    
+    if offset:
+      self.current_object['global_offset'] = self.get_trajectory(offset)
+
+    if angle:
+      g_angle = self.current_object['global_angle']
+      self.current_object['global_angle'] = [angle[0] + g_angle[0], angle[1] + g_angle[1], angle[2] + g_angle[2]]
+    
+    if scale:
+      g_scale = self.current_object['global_scale']
+      self.current_object['global_scale'] = [scale[0] + g_scale[0], scale[1] + g_scale[1], scale[2] + g_scale[2]]
+    
   def draw(self, program):
     loc_color = glGetUniformLocation(program, "color")
     for face_color in self.current_object_faces:
@@ -89,9 +104,10 @@ class ObjectControl(TransformControl) :
       glDrawArrays(GL_TRIANGLE_STRIP, vi, vt)
   
   def apply_transform(self, program, objName):
-    self.current_object = list(filter(lambda x : x['name'] == objName, self.object_list))[0]
-    if not self.current_object:
+    cur_Obj = list(filter(lambda x : x['name'] == objName, self.object_list))
+    if not cur_Obj:
       raise NameError(f'Object named {objName} not loaded')
+    self.current_object = cur_Obj[0]
     
     offset = self.current_object['global_offset']
     angle = self.current_object['global_angle']

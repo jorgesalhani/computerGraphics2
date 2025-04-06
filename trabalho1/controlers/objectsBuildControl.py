@@ -10,6 +10,41 @@ class ObjectsBuildControl:
     self.sector_step=(self.PI*2) / self.num_sectors # variar de 0 até 2π
     self.stack_step=(self.PI) / self.num_stacks # variar de 0 até π
 
+  def normalize_sketch(self, sketchFolderPath, objName, scale, fname = None):
+    fskecth = open(f'{sketchFolderPath}/{objName}.json', 'r')
+
+    verts = json.load(fskecth)
+    xs, ys, zs = zip(*verts)
+    min_x, max_x = min(xs), max(xs)
+    min_y, max_y = min(ys), max(ys)
+    min_z, max_z = min(zs), max(zs)
+
+    def normalize(v, min_val, max_val):
+        return (v - min_val) / ((max_val - min_val)*scale) if max_val != min_val else 0.0
+
+    normalized_verts = [
+        (
+            normalize(x, min_x, max_x),
+            normalize(y, min_y, max_y),
+            normalize(z, min_z, max_z)
+        )
+        for x, y, z in verts
+    ]
+    if not fname:
+      fjson = open(f'{self.objFilesPath}/{objName}.json', 'w')
+    else:
+      fjson = open(f'{self.objFilesPath}/{fname}.json', 'w')
+
+    moonObj = {
+      "faces": [{
+        "vertices": normalized_verts,
+        "color": [1,0,0,1]
+      }]
+    }
+    fjson.writelines(json.dumps(moonObj))
+    return normalized_verts
+
+
   def build_sphere(self, vertices, x0, y0, r, sphere_func = None):
     if not sphere_func:
       sphere_func = self.default_sphere
@@ -135,7 +170,7 @@ class ObjectsBuildControl:
     moonObj = {
       "faces": [{
         "vertices": verts,
-        "color": [1,0,0,1]
+        "color": [0.941,0.933,0.6117,1]
       }]
     }
     fjson.writelines(json.dumps(moonObj))

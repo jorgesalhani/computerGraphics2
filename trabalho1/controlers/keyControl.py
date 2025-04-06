@@ -41,19 +41,31 @@ class KeyControl:
       objectsControl.update_position(objName='moon', offset = [0,-0.01,0])
 
     if self.key_pressed == glfw.KEY_RIGHT:
-      objectsControl.update_position(objName='lighthouse_top', offset = [-0.001,0,0])
-      objectsControl.update_position(objName='lighthouse', offset = [-0.001,0,0])
+      objectsControl.update_position(objName='lighthouse_top', offset = [-0.001,0,0], angle= [0,0.001,0])
+      objectsControl.update_position(objName='lighthouse', offset = [-0.001,0,0], angle= [0,0.001,0])
       objectsControl.update_position(objName='rocks', offset = [-0.01,0,0])
       objectsControl.update_position(objName='cloud', offset = [-0.0005,0,0])
+
+      objectsControl.update_position('S0', offset=[-0.01,0,0])
+      objectsControl.update_position('E0', offset=[-0.01,0,0])
+      objectsControl.update_position('M0', offset=[-0.01,0,0])
+      objectsControl.update_position('I0', offset=[-0.01,0,0])
+      objectsControl.update_position('N0', offset=[-0.01,0,0])
+      objectsControl.update_position('T0', offset=[-0.01,0,0])
+      objectsControl.update_position('E1', offset=[-0.01,0,0])
+      objectsControl.update_position('R0', offset=[-0.01,0,0])
+      objectsControl.update_position('N1', offset=[-0.01,0,0])
+      objectsControl.update_position('E2', offset=[-0.01,0,0])
+      objectsControl.update_position('T1', offset=[-0.01,0,0])
     
     if self.key_pressed == glfw.KEY_L:
-      objectsControl.update_position(objName='lighthouse_top', angle = [0,-0.01,0])
+      objectsControl.update_position(objName='lighthouse_top', angle = [0,0.01,0])
 
     if self.key_pressed == glfw.KEY_G:
-      objectsControl.update_position(objName='lighthouse_top', scale = [0,0.01,0])
+      objectsControl.update_position(objName='dino', scale = [0.01,0.01,0])
     
     if self.key_pressed == glfw.KEY_H:
-      objectsControl.update_position(objName='lighthouse_top', scale = [0,-0.01,0])
+      objectsControl.update_position(objName='dino', scale = [-0.01,-0.01,0])
 
   
     

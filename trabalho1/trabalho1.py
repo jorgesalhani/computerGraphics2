@@ -2,8 +2,11 @@
 TRABALHO 1: código fonte
 
 Integrantes:
--- Nome: Jorge Augusto Salgado Salhani
+-- Nome: Jorge Salhani
 -- NUsp: 8927418
+
+-- Nome: João Zani
+-- NUsp: 11212640
 """
 
 import glfw

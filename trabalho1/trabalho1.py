@@ -88,18 +88,18 @@ objectsControl.load_object('lighthouse.json')
 # Normalizando objetos 
 # construídos fora do cubo unitário
 # =================================
-# objectsBuildControl.normalize_sketch('./trabalho1/sketches', 3, 'dino')
-# objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'S', 5, 'S0')
-# objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'E', 5, 'E0')
-# objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'M', 5, 'M0')
-# objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'I', 5, 'I0')
-# objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'N', 5, 'N0')
-# objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'T', 5, 'T0')
-# objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'E', 5, 'E1')
-# objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'R', 5, 'R0')
-# objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'N', 5, 'N1')
-# objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'E', 5, 'E2')
-# objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'T', 5, 'T1')
+objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'dino', 3)
+objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'S', 5, 'S0')
+objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'E', 5, 'E0')
+objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'M', 5, 'M0')
+objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'I', 5, 'I0')
+objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'N', 5, 'N0')
+objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'T', 5, 'T0')
+objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'E', 5, 'E1')
+objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'R', 5, 'R0')
+objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'N', 5, 'N1')
+objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'E', 5, 'E2')
+objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'T', 5, 'T1')
 
 # Construindo objetos via código
 # ==============================

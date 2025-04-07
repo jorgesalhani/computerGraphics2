@@ -52,7 +52,7 @@ class ObjectsBuildControl:
     moonObj = {
       "faces": [{
         "vertices": normalized_verts,
-        "color": [1,0,0,1]
+        "color": [0,0,0,1]
       }]
     }
     fjson.writelines(json.dumps(moonObj))

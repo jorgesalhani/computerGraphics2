@@ -1,3 +1,11 @@
+"""
+TRABALHO 1: código fonte
+
+Integrantes:
+-- Nome: Jorge Augusto Salgado Salhani
+-- NUsp: 8927418
+"""
+
 import glfw
 from OpenGL.GL import *
 import numpy as np
@@ -6,6 +14,8 @@ from controlers.keyControl import KeyControl
 from controlers.objectsControl import ObjectControl
 from controlers.objectsBuildControl import ObjectsBuildControl
 
+# Inicialização de janela e shaders
+# =================================
 glfw.init()
 glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
 window = glfw.create_window(700, 700, "Programa", None, None)
@@ -69,10 +79,15 @@ glUseProgram(program)
 objectsControl = ObjectControl('./trabalho1/objects')
 objectsBuildControl = ObjectsBuildControl('./trabalho1/objects')
 
+# Carregando objetos
+# ==================
 objectsControl.load_object('rocks.json')
 objectsControl.load_object('floor.json')
 objectsControl.load_object('lighthouse.json')
 
+# Normalizando objetos 
+# construídos fora do cubo unitário
+# =================================
 # objectsBuildControl.normalize_sketch('./trabalho1/sketches', 3, 'dino')
 # objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'S', 5, 'S0')
 # objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'E', 5, 'E0')
@@ -86,10 +101,14 @@ objectsControl.load_object('lighthouse.json')
 # objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'E', 5, 'E2')
 # objectsBuildControl.normalize_sketch('./trabalho1/sketches', 'T', 5, 'T1')
 
+# Construindo objetos via código
+# ==============================
 global_offset_moon = objectsBuildControl.build_moon()
 global_offset_lighhouse_top = objectsBuildControl.build_lighthouse_top()
 global_offset_cloud = objectsBuildControl.build_cloud()
 
+# Carregando vértices dos objetos
+# ===============================
 objectsControl.load_object('moon.json', global_offset_moon)
 objectsControl.load_object('dino.json', [-0.5,-0.5,-0.5])
 objectsControl.load_object('S0.json', [6,0,0.8])
@@ -109,12 +128,10 @@ objectsControl.load_object('cloud.json', global_offset_cloud)
 
 vertices_list = objectsControl.vertices_list['vertices']
 faces_color = objectsControl.faces_color
-# print(faces_color)
 
 total_vertices = len(vertices_list)
 vertices = np.zeros(total_vertices, [("position", np.float32, 3)])
 vertices['position'] = vertices_list
-# print(vertices['position'])
 
 # Request a buffer slot from GPU
 buffer_VBO = glGenBuffers(1)
@@ -151,6 +168,8 @@ while not glfw.window_should_close(window):
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)    
     glClearColor(1.0, 1.0, 1.0, 1.0)
 
+    # Aplicando transformações por objeto
+    # ===================================
     objectsControl.apply_transform(program, 'cloud')    
     objectsControl.apply_transform(program, 'moon')
     objectsControl.apply_transform(program, 'rocks')

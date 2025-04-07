@@ -7,7 +7,18 @@ from OpenGL.GL import *
 from .trajectories import Trajectories
 
 class ObjectControl(TransformControl) :
+  """
+  Classe de controle de objetos
+  - carregamento
+  - aplicação de transformação
+  """
   def __init__(self, folder_path):
+    """
+    Inicialização da classe
+
+    @param
+      folder_path: caminho da pasta com os arquivos dos objetos
+    """
     if not os.path.isdir(folder_path):
       raise FileNotFoundError(f'Dir not found: {folder_path}')
     self.folder_path = folder_path
@@ -19,7 +30,15 @@ class ObjectControl(TransformControl) :
     self.object_list = []
     self.current_object_faces = {}
 
+
   def load_object(self, filename, global_offset = [0,0,0]):
+    """
+    Carregar objetos
+
+    @param
+      filename: nome do arquivo
+      global_offset: posições iniciais do objeto carregados na cena
+    """
     fullpath = f'{self.folder_path}/{filename}'
     if not os.path.isfile(fullpath):
       raise FileNotFoundError(f'Object file not found: {filename}')
@@ -32,6 +51,34 @@ class ObjectControl(TransformControl) :
     objName = os.path.splitext(filename)[0]
     vf = vi
 
+    # Nesse loop, atualizamos a listagem de faces
+    # para cada objeto, anotando qual o vertice inicial e o total de vertices
+    # assim como suas cores
+    """
+    self.faces_color =  [{
+      'name': objName,
+      'rgb': face['color'],
+      'first': vi,
+      'total': total_vertices
+    }]
+    """
+
+    # Atualizamos também a listagem de vertices 
+    # de cada face a ser carregada nos shaders
+
+    """
+    self.vertices_list = [{
+      'vertices': [
+        [0.6, -0.3, 0.2],
+        ...
+      ],
+      'first_last_vertices': {
+        'name': objName,
+        'first': vi,
+        'last': vi + total_vertices
+      }
+    }]
+    """
     for face in faces:
       total_vertices = len(face['vertices'])
       map_color_position = {
@@ -54,6 +101,23 @@ class ObjectControl(TransformControl) :
       vf = vi + total_vertices
       vi += total_vertices
 
+    # Também construimos uma listagem de objetos 
+    # com suas principais caracteristicas e posicoes
+    # globais
+    """
+    self.object_list = [{
+      'name': objName,
+      'vertices': {
+        'first': vi,
+        'last': vf
+      },
+      'global_offset': global_offset,
+      'global_angle': [0,0,0],
+      'global_scale': [1,1,1],
+      'global_dt': 0
+    }]
+    """
+    
     self.object_list.append({
       'name': objName,
       'vertices': {
@@ -69,6 +133,12 @@ class ObjectControl(TransformControl) :
     return self.vertices_list
   
   def get_trajectory(self, offset):
+    """
+    Função auxiliar para calculo de trajetórias
+
+    @param
+      offset: deslocamento incrementado
+    """
     g_offset = self.current_object['global_offset']
 
     if self.current_object['name'] == 'moon':
@@ -79,6 +149,15 @@ class ObjectControl(TransformControl) :
     return Trajectories.linear(g_offset, offset)
   
   def update_position(self, objName, angle = None, offset = None, scale = None):
+    """
+    Atualização da posição global de um dado objeto por seu nome
+
+    @param
+      objName: Nome do objeto a ser atualizado
+      angle: angulo a ser rotacionado
+      offset: deslocamento para translado
+      scale: fato de escala
+    """
     curObj = list(filter(lambda x : x['name'] == objName, self.object_list))
     if not curObj:
       raise NameError(f'Object named {objName} not loaded')
@@ -96,6 +175,10 @@ class ObjectControl(TransformControl) :
       self.current_object['global_scale'] = [scale[0] + g_scale[0], scale[1] + g_scale[1], scale[2] + g_scale[2]]
     
   def draw(self, program):
+    """
+    Exibir em tela o objeto corrente com seus vértices
+    e cor de face
+    """
     loc_color = glGetUniformLocation(program, "color")
     for face_color in self.current_object_faces:
       r,g,b,a = face_color['rgb']
@@ -104,6 +187,13 @@ class ObjectControl(TransformControl) :
       glDrawArrays(GL_TRIANGLE_STRIP, vi, vt)
   
   def apply_transform(self, program, objName):
+    """
+    Aplicação de matriz de tranformação para deslocamento do 
+    objeto no cenário
+
+    @param
+      objName: nome do objeto a ser transformado
+    """
     cur_Obj = list(filter(lambda x : x['name'] == objName, self.object_list))
     if not cur_Obj:
       raise NameError(f'Object named {objName} not loaded')

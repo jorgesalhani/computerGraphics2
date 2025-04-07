@@ -2,11 +2,18 @@ import math
 import numpy as np
 
 class TransformControl:
+  """
+  Classe auxiliar para obtenção das matrizes
+  de transformação de vertices
+  """
   def __init__(self):
     pass
 
   @staticmethod
   def multiplica_matriz(a, b):
+    """
+    Função auxiliar para multiplicar matrizes
+    """
     m_a = a.reshape(4,4)
     m_b = b.reshape(4,4)
     m_c = np.dot(m_a,m_b)

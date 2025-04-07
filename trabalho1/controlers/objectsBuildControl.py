@@ -2,6 +2,9 @@ import numpy as np
 import json
 
 class ObjectsBuildControl:
+  """
+  Construção de objetos via script
+  """
   def __init__(self, objFilesPath):
     self.objFilesPath = objFilesPath
     self.PI = 3.141592
@@ -11,6 +14,17 @@ class ObjectsBuildControl:
     self.stack_step=(self.PI) / self.num_stacks # variar de 0 até π
 
   def normalize_sketch(self, sketchFolderPath, objName, scale, fname = None):
+    """
+    Normalizar desenhos construídos vertice a vertice, 
+    considerando (0,0,0) como canto inferior esquerdo
+    dos vértices desenhados, sem normalização
+
+    @params:
+      sketchFolderPath: caminho origem dos desenhos
+      objName: nome do objeto buscado na pasta de desenhos
+      scale: fator de escala aplicado a todos os vertices do desenho
+      fname: nome do objeto destino, criado de modo normalizado
+    """
     fskecth = open(f'{sketchFolderPath}/{objName}.json', 'r')
 
     verts = json.load(fskecth)
@@ -46,6 +60,16 @@ class ObjectsBuildControl:
 
 
   def build_sphere(self, vertices, x0, y0, r, sphere_func = None):
+    """
+    Construir esfera
+
+    @param
+      vertices: listagem de vertices que será atualizada
+      x0: origem x da esfera
+      y0: origem y da esfera
+      r: raio da esfera
+      sphere_func: funcao de recorte da esfera
+    """
     if not sphere_func:
       sphere_func = self.default_sphere
 

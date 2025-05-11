@@ -119,7 +119,7 @@ class ObjectLoad:
             with open(mtl_path, 'r') as mtl_file:
                 for line in mtl_file:
                     if line.startswith("map_Kd"):
-                        texture_file = os.path.join(base_dir, line.strip().split()[1])
+                        texture_file = os.path.join(base_dir, ''.join(line.strip().split(' ', 1)[1:]))
                         break
 
         self.texture = self.load_texture(texture_file) if texture_file else None
@@ -268,17 +268,31 @@ def main():
     glEnable(GL_DEPTH_TEST)
 
     objects = {
-        'objSky': ObjectLoad("objects/caixa/caixa.obj", "objects/caixa/matrix.jpg"),
-        'objBox': ObjectLoad("objects/caixa/caixa.obj", "objects/caixa/caixa.jpg"),
+        # 'objSky': ObjectLoad("objects/caixa/caixa.obj", "objects/caixa/matrix.jpg"),
+        # 'objBox': ObjectLoad("objects/caixa/caixa.obj", "objects/caixa/caixa.jpg"),
         'obj1': ObjectLoad("objects/desk/Stylized_Desk.obj"),
         'obj2': ObjectLoad("objects/miniDesk/japanschooldesk.obj"),
+        'obj3': ObjectLoad("objects/tableOut/Outdoor Furniture_02_obj.obj"),
+        'obj4': ObjectLoad("objects/plant1/eb_house_plant_01.obj"),
+        'obj5': ObjectLoad("objects/plant2/eb_house_plant_02.obj"),
+        'obj6': ObjectLoad("objects/plant3/eb_house_plant_03.obj"),
     }
-    objects['objSky'].scale(10, 10, 10)
-    objects['objSky'].move(y=9.9)
-    objects['objBox'].scale(5, 5, 5)
-    objects['objBox'].move(y=5)
+    # objects['objSky'].scale(10, 10, 10)
+    # objects['objSky'].move(y=9.9)
+    # objects['objBox'].scale(5, 5, 5)
+    # objects['objBox'].move(y=5)
     objects['obj1'].scale(0.01, 0.01, 0.01)
+    objects['obj1'].move(x=3)
     objects['obj2'].move(z=4)
+    objects['obj3'].move(x=4,z=-4)
+    objects['obj3'].scale(0.02, 0.02, 0.02)
+    objects['obj4'].scale(0.04, 0.04, 0.04)
+    objects['obj4'].move(z=-5)
+    objects['obj5'].scale(0.04, 0.04, 0.04)
+    objects['obj5'].move(z=-3.4)
+    objects['obj6'].scale(0.04, 0.04, 0.04)
+    objects['obj6'].move(x=-3,z=-3.4)
+
 
     
     glfw.set_window_user_pointer(window, objects)

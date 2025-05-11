@@ -66,11 +66,11 @@ class ObjectLoad:
         self.scale_factor.z *= z
         self.update_model_matrix()
 
-    def rotate(self, degrees=0.1, x=0, y=0, z=0):
+    def rotate(self, degrees=0.1, axis='x'):
         self.angle += degrees
-        self.rotate_coords.x += x
-        self.rotate_coords.y += y
-        self.rotate_coords.z += z
+        if axis == 'x': self.rotate_coords.x = 1
+        if axis == 'y': self.rotate_coords.y = 1
+        if axis == 'z': self.rotate_coords.z = 1
         self.update_model_matrix()
         self.update_model_matrix()
 
@@ -276,6 +276,8 @@ def main():
         'obj4': ObjectLoad("objects/plant1/eb_house_plant_01.obj"),
         'obj5': ObjectLoad("objects/plant2/eb_house_plant_02.obj"),
         'obj6': ObjectLoad("objects/plant3/eb_house_plant_03.obj"),
+        'obj7': ObjectLoad("objects/cat/Cat_v1_l3.obj"),
+        'obj8': ObjectLoad("objects/tree/Tree2.obj"),
     }
     # objects['objSky'].scale(10, 10, 10)
     # objects['objSky'].move(y=9.9)
@@ -292,6 +294,11 @@ def main():
     objects['obj5'].move(z=-3.4)
     objects['obj6'].scale(0.04, 0.04, 0.04)
     objects['obj6'].move(x=-3,z=-3.4)
+    objects['obj7'].scale(0.02, 0.02, 0.02)
+    objects['obj7'].rotate(90, axis='z')
+    objects['obj7'].rotate(90, axis='y')
+    objects['obj7'].move(z=-2)
+    objects['obj8'].scale(0.5, 0.5, 0.5)
 
 
     

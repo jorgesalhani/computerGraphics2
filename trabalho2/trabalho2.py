@@ -127,6 +127,8 @@ class ObjectLoad:
         vertex_data = []
         for face in faces:
             for v_idx, vt_idx in face:
+                if abs(v_idx) > len(positions) - 1: 
+                    break
                 vertex = positions[v_idx]
                 tex = texcoords[vt_idx]
                 vertex_data.extend(vertex[:3] + tex[:2])
@@ -188,8 +190,8 @@ def key_callback(window, key, scancode, action, mods):
     global camera_pos, camera_front, camera_up
 
     objects = glfw.get_window_user_pointer(window)
-    obj1 : ObjectLoad = objects["obj1"]
-    obj2 : ObjectLoad = objects["obj2"]
+    # obj1 : ObjectLoad = objects["obj1"]
+    # obj2 : ObjectLoad = objects["obj2"]
 
     speed = 0.1
     translate_step = 0.1
@@ -214,9 +216,9 @@ def key_callback(window, key, scancode, action, mods):
             if camera_pos.y - speed >= 0:
                 camera_pos -= camera_up * speed
 
-        # Object controls
-        elif key == glfw.KEY_A:
-            obj1.move(x=-translate_step)
+        # # Object controls
+        # elif key == glfw.KEY_A:
+        #     obj1.move(x=-translate_step)
         # elif key == glfw.KEY_D:
         #     obj2.move(x=translate_step)
 
@@ -266,9 +268,18 @@ def main():
     glEnable(GL_DEPTH_TEST)
 
     objects = {
-        "obj1": ObjectLoad("objects/caixa/caixa.obj", 'objects/caixa/caixa.jpg'), 
-        'obj2': ObjectLoad("objects/caixa/caixa.obj"), 
+        'objSky': ObjectLoad("objects/caixa/caixa.obj", "objects/caixa/matrix.jpg"),
+        'objBox': ObjectLoad("objects/caixa/caixa.obj", "objects/caixa/caixa.jpg"),
+        'obj1': ObjectLoad("objects/desk/Stylized_Desk.obj"),
+        'obj2': ObjectLoad("objects/miniDesk/japanschooldesk.obj"),
     }
+    objects['objSky'].scale(10, 10, 10)
+    objects['objSky'].move(y=9.9)
+    objects['objBox'].scale(5, 5, 5)
+    objects['objBox'].move(y=5)
+    objects['obj1'].scale(0.01, 0.01, 0.01)
+    objects['obj2'].move(z=4)
+
     
     glfw.set_window_user_pointer(window, objects)
 

@@ -116,8 +116,7 @@ class ObjectLoad:
                     elif len(face) == 4:
                         faces.append([face[0], face[1], face[2]])
                         faces.append([face[0], face[2], face[3]])
-
-        # parse the mtl file (if any)
+   
         if mtl_path and os.path.exists(mtl_path):
             with open(mtl_path, 'r') as mtl_file:
                 for line in mtl_file:

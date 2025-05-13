@@ -16,6 +16,8 @@ last_x, last_y = 400, 300
 yaw = -90.0
 pitch = 0.0
 sensitivity = 0.1
+scaleBuddha = 30
+display_mash = False
 
 import math
 
@@ -31,6 +33,59 @@ def compute_model_matrix(angle, r_x, r_y, r_z, t_x, t_y, t_z, s_x, s_y, s_z):
     matrix_transform = glm.scale(matrix_transform, glm.vec3(s_x, s_y, s_z))
 
     return matrix_transform
+
+CUBEMAP_TEXTURE_PATHS = [
+    "objects/skybox/image_part_002.png",  
+    "objects/skybox/image_part_005.png",   
+    "objects/skybox/image_part_006.png",    
+    "objects/skybox/image_part_007.png", 
+    "objects/skybox/image_part_008.png",  
+    "objects/skybox/image_part_010.png",   
+]
+
+skybox_vertices = np.array([
+    -1,  1, -1,  -1, -1, -1,   1, -1, -1,   1, -1, -1,   1,  1, -1,  -1,  1, -1,
+    -1, -1,  1,  -1, -1, -1,  -1,  1, -1,  -1,  1, -1,  -1,  1,  1,  -1, -1,  1,
+     1, -1, -1,   1, -1,  1,   1,  1,  1,   1,  1,  1,   1,  1, -1,   1, -1, -1,
+    -1, -1,  1,  -1,  1,  1,   1,  1,  1,   1,  1,  1,   1, -1,  1,  -1, -1,  1,
+    -1,  1, -1,   1,  1, -1,   1,  1,  1,   1,  1,  1,  -1,  1,  1,  -1,  1, -1,
+    -1, -1, -1,  -1, -1,  1,   1, -1, -1,   1, -1, -1,  -1, -1,  1,   1, -1,  1,
+], dtype=np.float32)
+
+def load_cubemap(faces):
+    texture_id = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture_id)
+
+    for i, face in enumerate(faces):
+        try:
+            image = Image.open(face).transpose(Image.FLIP_TOP_BOTTOM).convert("RGBA")
+            width, height = image.size
+            side = max(width, height)
+
+            if width != height:
+                print(f"Resizing image '{face}' from {width}x{height} to {side}x{side}")
+                image = image.resize((side, side), Image.LANCZOS)
+
+            img_data = image.tobytes()
+            glTexImage2D(
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
+                GL_RGBA, side, side, 0,
+                GL_RGBA, GL_UNSIGNED_BYTE, img_data
+            )
+
+        except Exception as e:
+            print(f"Failed to load texture '{face}': {e}")
+            continue
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE)
+
+    return texture_id
+
+
 
 class ObjectLoad:
     def __init__(self, obj_path, texture_file = None):
@@ -187,40 +242,72 @@ def mouse_callback(window, xpos, ypos):
 
 
 def key_callback(window, key, scancode, action, mods):
-    global camera_pos, camera_front, camera_up
+    global camera_pos, camera_front, camera_up, scaleBuddha, display_mash
 
     objects = glfw.get_window_user_pointer(window)
     # obj1 : ObjectLoad = objects["obj1"]
     # obj2 : ObjectLoad = objects["obj2"]
 
-    speed = 0.1
+    speed = 0.3
     translate_step = 0.1
-    scale_step = 0.1
+    scale_step = 1.1
     rotate_step = 10
 
     if action == glfw.PRESS and key == glfw.KEY_ESCAPE:
         glfw.set_window_should_close(window, True)
 
+    if action == glfw.PRESS and key == glfw.KEY_P:
+        display_mash = not display_mash
+
     if action == glfw.PRESS or action == glfw.REPEAT:
         right = glm.normalize(glm.cross(camera_front, camera_up))
 
         # Camera controls
-        if key == glfw.KEY_LEFT:
+        if key == glfw.KEY_A:
             camera_pos -= right * speed
-        elif key == glfw.KEY_RIGHT:
+        elif key == glfw.KEY_D:
             camera_pos += right * speed
-        elif key == glfw.KEY_UP:
-            if camera_pos.y + speed >= 0:
-                camera_pos += camera_up * speed
-        elif key == glfw.KEY_DOWN:
-            if camera_pos.y - speed >= 0:
-                camera_pos -= camera_up * speed
 
-        # # Object controls
-        # elif key == glfw.KEY_A:
-        #     obj1.move(x=-translate_step)
-        # elif key == glfw.KEY_D:
-        #     obj2.move(x=translate_step)
+        elif key == glfw.KEY_W:
+            camera_pos += camera_front * speed
+        elif key == glfw.KEY_S:
+            camera_pos -= camera_front * speed
+
+        elif key == glfw.KEY_SPACE:
+            camera_pos += camera_up * speed
+        elif key == glfw.KEY_LEFT_CONTROL and camera_pos.y >= 0:
+            camera_pos -= camera_up * speed
+
+        # Table object controls
+        elif key == glfw.KEY_UP:
+            objects['obj3'].move(z=-translate_step)
+        elif key == glfw.KEY_DOWN:
+            objects['obj3'].move(z=translate_step)
+        elif key == glfw.KEY_LEFT:
+            objects['obj3'].move(x=-translate_step)
+        elif key == glfw.KEY_RIGHT:
+            objects['obj3'].move(x=translate_step)
+
+
+        # Buddha object controls
+        elif key == glfw.KEY_Z:
+            objects['buddha'].scale(scale_step, scale_step, scale_step)
+        elif key == glfw.KEY_X:
+            objects['buddha'].scale(1/scale_step, 1/scale_step, 1/scale_step)
+        
+        # Cat object controls
+        elif key == glfw.KEY_U:
+            objects['cat'].rotate(rotate_step, axis='y')
+        elif key == glfw.KEY_O:
+            objects['cat'].rotate(-rotate_step, axis='y')
+        elif key == glfw.KEY_I:
+            objects['cat'].move(z=-translate_step)
+        elif key == glfw.KEY_K:
+            objects['cat'].move(z=translate_step)
+        elif key == glfw.KEY_J:
+            objects['cat'].move(x=-translate_step)
+        elif key == glfw.KEY_L:
+            objects['cat'].move(x=translate_step)
 
 # Shader
 vertex_src = """
@@ -266,45 +353,79 @@ def main():
 
     glUseProgram(shader)
     glEnable(GL_DEPTH_TEST)
+    cubemap_texture = load_cubemap(CUBEMAP_TEXTURE_PATHS)
 
     objects = {
-        # 'objSky': ObjectLoad("objects/caixa/caixa.obj", "objects/caixa/matrix.jpg"),
+        # 'objSky': ObjectLoad("objects/caixa/caixa.obj", "objects/caixa/pngwing.com.png"),
         # 'objBox': ObjectLoad("objects/caixa/caixa.obj", "objects/caixa/caixa.jpg"),
         'obj1': ObjectLoad("objects/desk/Stylized_Desk.obj"),
-        'obj2': ObjectLoad("objects/miniDesk/japanschooldesk.obj"),
+        # 'obj2': ObjectLoad("objects/miniDesk/japanschooldesk.obj"),
         'obj3': ObjectLoad("objects/tableOut/Outdoor Furniture_02_obj.obj"),
         'obj4': ObjectLoad("objects/plant1/eb_house_plant_01.obj"),
         'obj5': ObjectLoad("objects/plant2/eb_house_plant_02.obj"),
         'obj6': ObjectLoad("objects/plant3/eb_house_plant_03.obj"),
-        'obj7': ObjectLoad("objects/cat/Cat_v1_l3.obj"),
-        'obj8': ObjectLoad("objects/tree/Tree2.obj"),
+        'cat': ObjectLoad("objects/cat/Cat_v1_l3.obj"),
+        'tree1': ObjectLoad("objects/tree/Tree2.obj"),
+        'tree2': ObjectLoad("objects/tree/Tree2.obj"),
+        'tree3': ObjectLoad("objects/tree/Tree2.obj"),
+        'tree4': ObjectLoad("objects/tree/Tree2.obj"),
+        'tree5': ObjectLoad("objects/tree/Tree2.obj"),
+        'tree6': ObjectLoad("objects/tree/Tree2.obj"),
+        'gate': ObjectLoad("objects/gate2/Japanese_Torii_Gate.obj"),
+        'temple': ObjectLoad("objects/temple/Japanese_Temple.obj"),
+        'buddha': ObjectLoad("objects/buddha/SM_Buddha.obj"),
+
     }
+
     # objects['objSky'].scale(10, 10, 10)
     # objects['objSky'].move(y=9.9)
     # objects['objBox'].scale(5, 5, 5)
     # objects['objBox'].move(y=5)
     objects['obj1'].scale(0.01, 0.01, 0.01)
-    objects['obj1'].move(x=3)
-    objects['obj2'].move(z=4)
+    objects['obj1'].move(x=2, y=12.4, z=-30)
+    #objects['obj2'].move(z=4)
     objects['obj3'].move(x=4,z=-4)
     objects['obj3'].scale(0.02, 0.02, 0.02)
     objects['obj4'].scale(0.04, 0.04, 0.04)
-    objects['obj4'].move(z=-5)
+    objects['obj4'].move(x=2, y=3.5, z=-30)
     objects['obj5'].scale(0.04, 0.04, 0.04)
-    objects['obj5'].move(z=-3.4)
+    objects['obj5'].move(x=-2, y=12.4, z=-30)
     objects['obj6'].scale(0.04, 0.04, 0.04)
-    objects['obj6'].move(x=-3,z=-3.4)
-    objects['obj7'].scale(0.02, 0.02, 0.02)
-    objects['obj7'].rotate(90, axis='z')
-    objects['obj7'].rotate(90, axis='y')
-    objects['obj7'].move(z=-2)
-    objects['obj8'].scale(0.5, 0.5, 0.5)
+    objects['obj6'].move(y=3.5, z=-33)
+    objects['cat'].scale(0.02, 0.02, 0.02)
+    objects['cat'].rotate(90, axis='z')
+    objects['cat'].rotate(90, axis='y')
+    objects['cat'].move(y=3.5, z=-30)
+    objects['gate'].scale(15, 15, 15)
+    objects['gate'].move(z=4)
+    objects['temple'].scale(1.5, 1.5, 1.5)
+    objects['temple'].move(z=-30)
+    objects['buddha'].scale(scaleBuddha, scaleBuddha, scaleBuddha)
+    objects['buddha'].rotate(180, axis='y')
+    objects['buddha'].move(z=100)
+
+    objects['tree1'].scale(2, 2, 2)
+    objects['tree2'].scale(2, 2, 2)
+    objects['tree3'].scale(2, 2, 2)
+    objects['tree4'].scale(2, 2, 2)
+    objects['tree5'].scale(2, 2, 2)
+    objects['tree6'].scale(2, 2, 2)
+
+
+    objects['tree1'].move(x=50, z=-10)
+    objects['tree2'].move(x=-50, z=-10)
+    objects['tree3'].move(x=40, z=0)
+    objects['tree4'].move(x=-40, z=0)
+    objects['tree5'].move(x=30, z=15)
+    objects['tree6'].move(x=-30, z=15)
+
+
 
 
     
     glfw.set_window_user_pointer(window, objects)
 
-    projection = glm.perspective(glm.radians(45.0), 800/600, 0.1, 100.0)
+    projection = glm.perspective(glm.radians(45.0), 800/600, 0.1, 150.0)
 
     while not glfw.window_should_close(window):
         glfw.poll_events()
@@ -317,6 +438,7 @@ def main():
         glUseProgram(shader)
         glUniformMatrix4fv(glGetUniformLocation(shader, "view"), 1, GL_FALSE, glm.value_ptr(view))
         glUniformMatrix4fv(glGetUniformLocation(shader, "projection"), 1, GL_FALSE, glm.value_ptr(projection))
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap_texture)
 
         for obj in objects.values():
             model_loc = glGetUniformLocation(shader, "model")
@@ -327,6 +449,12 @@ def main():
 
             glBindVertexArray(obj.vao)
             glDrawArrays(GL_TRIANGLES, 0, len(obj.vertices) // 5)
+        
+        if display_mash:
+            glPolygonMode(GL_FRONT_AND_BACK,GL_LINE)
+        else:
+            glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
+        
         glfw.swap_buffers(window)
 
     glfw.terminate()

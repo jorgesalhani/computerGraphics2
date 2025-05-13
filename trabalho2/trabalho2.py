@@ -287,6 +287,10 @@ def key_callback(window, key, scancode, action, mods):
             objects['obj3'].move(x=-translate_step)
         elif key == glfw.KEY_RIGHT:
             objects['obj3'].move(x=translate_step)
+        elif key == glfw.KEY_U:
+            objects['obj3'].rotate(rotate_step, axis='y')
+        elif key == glfw.KEY_O:
+            objects['obj3'].rotate(-rotate_step, axis='y')
 
 
         # Buddha object controls
@@ -296,10 +300,7 @@ def key_callback(window, key, scancode, action, mods):
             objects['buddha'].scale(1/scale_step, 1/scale_step, 1/scale_step)
         
         # Cat object controls
-        elif key == glfw.KEY_U:
-            objects['cat'].rotate(rotate_step, axis='y')
-        elif key == glfw.KEY_O:
-            objects['cat'].rotate(-rotate_step, axis='y')
+
         elif key == glfw.KEY_I:
             objects['cat'].move(z=-translate_step)
         elif key == glfw.KEY_K:
@@ -382,20 +383,19 @@ def main():
     # objects['objBox'].scale(5, 5, 5)
     # objects['objBox'].move(y=5)
     objects['obj1'].scale(0.01, 0.01, 0.01)
-    objects['obj1'].move(x=2, y=12.4, z=-30)
+    objects['obj1'].move(x=2, y=12.55, z=-30)
     #objects['obj2'].move(z=4)
     objects['obj3'].move(x=4,z=-4)
     objects['obj3'].scale(0.02, 0.02, 0.02)
     objects['obj4'].scale(0.04, 0.04, 0.04)
-    objects['obj4'].move(x=2, y=3.5, z=-30)
+    objects['obj4'].move(x=2, y=3.3, z=-30)
     objects['obj5'].scale(0.04, 0.04, 0.04)
-    objects['obj5'].move(x=-2, y=12.4, z=-30)
+    objects['obj5'].move(x=-2, y=12.55, z=-30)
     objects['obj6'].scale(0.04, 0.04, 0.04)
-    objects['obj6'].move(y=3.5, z=-33)
+    objects['obj6'].move(y=3.3, z=-33)
     objects['cat'].scale(0.02, 0.02, 0.02)
-    objects['cat'].rotate(90, axis='z')
-    objects['cat'].rotate(90, axis='y')
-    objects['cat'].move(y=3.5, z=-30)
+    objects['cat'].rotate(-90, axis='x')
+    objects['cat'].move(y=3.3, z=-30)
     objects['gate'].scale(15, 15, 15)
     objects['gate'].move(z=4)
     objects['temple'].scale(1.5, 1.5, 1.5)

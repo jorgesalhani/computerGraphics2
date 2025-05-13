@@ -34,58 +34,6 @@ def compute_model_matrix(angle, r_x, r_y, r_z, t_x, t_y, t_z, s_x, s_y, s_z):
 
     return matrix_transform
 
-CUBEMAP_TEXTURE_PATHS = [
-    "objects/skybox/image_part_002.png",  
-    "objects/skybox/image_part_005.png",   
-    "objects/skybox/image_part_006.png",    
-    "objects/skybox/image_part_007.png", 
-    "objects/skybox/image_part_008.png",  
-    "objects/skybox/image_part_010.png",   
-]
-
-skybox_vertices = np.array([
-    -1,  1, -1,  -1, -1, -1,   1, -1, -1,   1, -1, -1,   1,  1, -1,  -1,  1, -1,
-    -1, -1,  1,  -1, -1, -1,  -1,  1, -1,  -1,  1, -1,  -1,  1,  1,  -1, -1,  1,
-     1, -1, -1,   1, -1,  1,   1,  1,  1,   1,  1,  1,   1,  1, -1,   1, -1, -1,
-    -1, -1,  1,  -1,  1,  1,   1,  1,  1,   1,  1,  1,   1, -1,  1,  -1, -1,  1,
-    -1,  1, -1,   1,  1, -1,   1,  1,  1,   1,  1,  1,  -1,  1,  1,  -1,  1, -1,
-    -1, -1, -1,  -1, -1,  1,   1, -1, -1,   1, -1, -1,  -1, -1,  1,   1, -1,  1,
-], dtype=np.float32)
-
-def load_cubemap(faces):
-    texture_id = glGenTextures(1)
-    glBindTexture(GL_TEXTURE_CUBE_MAP, texture_id)
-
-    for i, face in enumerate(faces):
-        try:
-            image = Image.open(face).transpose(Image.FLIP_TOP_BOTTOM).convert("RGBA")
-            width, height = image.size
-            side = max(width, height)
-
-            if width != height:
-                print(f"Resizing image '{face}' from {width}x{height} to {side}x{side}")
-                image = image.resize((side, side), Image.LANCZOS)
-
-            img_data = image.tobytes()
-            glTexImage2D(
-                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
-                GL_RGBA, side, side, 0,
-                GL_RGBA, GL_UNSIGNED_BYTE, img_data
-            )
-
-        except Exception as e:
-            print(f"Failed to load texture '{face}': {e}")
-            continue
-
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE)
-
-    return texture_id
-
-
 
 class ObjectLoad:
     def __init__(self, obj_path, texture_file = None):
@@ -310,55 +258,39 @@ def key_callback(window, key, scancode, action, mods):
         elif key == glfw.KEY_L:
             objects['cat'].move(x=translate_step)
 
-# Shader
-vertex_src = """
-#version 330 core
-layout(location = 0) in vec3 a_position;
-layout(location = 1) in vec2 a_texcoord;
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-out vec2 texcoord;
-void main() {
-    gl_Position = projection * view * model * vec4(a_position, 1.0);
-    texcoord = a_texcoord;
-}
-"""
-
-fragment_src = """
-#version 330 core
-in vec2 texcoord;
-out vec4 out_color;
-uniform sampler2D tex;
-void main() {
-    out_color = texture(tex, texcoord);
-}
-"""
-
 # Main
 def main():
     if not glfw.init():
         return
 
-    window = glfw.create_window(800, 600, "ObjectLoad Class Demo", None, None)
+    window = glfw.create_window(1000, 800, "ObjectLoad Class Demo", None, None)
     glfw.set_cursor_pos_callback(window, mouse_callback)
     glfw.set_input_mode(window, glfw.CURSOR, glfw.CURSOR_DISABLED)
     glfw.make_context_current(window)
     glfw.set_scroll_callback(window, scroll_callback)
     glfw.set_key_callback(window, key_callback)
 
+    vShaderFile = open('vertex_shader.vs')
+    fShaderFile = open('fragment_shader.fs')
+    
+    # read file's buffer contents into strings
+    vertexCode = vShaderFile.read()
+    fragmentCode = fShaderFile.read()
+    # close file handlers
+    vShaderFile.close()
+    fShaderFile.close()
+
     shader = compileProgram(
-        compileShader(vertex_src, GL_VERTEX_SHADER),
-        compileShader(fragment_src, GL_FRAGMENT_SHADER)
+        compileShader(vertexCode, GL_VERTEX_SHADER),
+        compileShader(fragmentCode, GL_FRAGMENT_SHADER)
     )
 
     glUseProgram(shader)
     glEnable(GL_DEPTH_TEST)
-    cubemap_texture = load_cubemap(CUBEMAP_TEXTURE_PATHS)
 
     objects = {
-        # 'objSky': ObjectLoad("objects/caixa/caixa.obj", "objects/caixa/pngwing.com.png"),
-        # 'objBox': ObjectLoad("objects/caixa/caixa.obj", "objects/caixa/caixa.jpg"),
+        'boxSky': ObjectLoad("objects/caixa/caixa.obj", "objects/skybox/image_part_002.png"),
+        'boxGround': ObjectLoad("objects/caixa/caixa.obj", "objects/grass/Textures/green-grass-texture-background-grass-garden-concept-used-for-making-green-background-football-pitch-grass-golf-green-lawn-pattern-textured-background-photo.jpg"),
         'obj1': ObjectLoad("objects/desk/Stylized_Desk.obj"),
         # 'obj2': ObjectLoad("objects/miniDesk/japanschooldesk.obj"),
         'obj3': ObjectLoad("objects/tableOut/Outdoor Furniture_02_obj.obj"),
@@ -378,10 +310,10 @@ def main():
 
     }
 
-    # objects['objSky'].scale(10, 10, 10)
-    # objects['objSky'].move(y=9.9)
-    # objects['objBox'].scale(5, 5, 5)
-    # objects['objBox'].move(y=5)
+    objects['boxSky'].scale(149,149,149)
+    objects['boxSky'].move(y=5)
+    objects['boxGround'].scale(149, 1, 149)
+    objects['boxGround'].move(y=-2)
     objects['obj1'].scale(0.01, 0.01, 0.01)
     objects['obj1'].move(x=2, y=12.55, z=-30)
     #objects['obj2'].move(z=4)
@@ -425,7 +357,7 @@ def main():
     
     glfw.set_window_user_pointer(window, objects)
 
-    projection = glm.perspective(glm.radians(45.0), 800/600, 0.1, 150.0)
+    projection = glm.perspective(glm.radians(45.0), 800/600, 0.1, 300.0)
 
     while not glfw.window_should_close(window):
         glfw.poll_events()
@@ -438,7 +370,6 @@ def main():
         glUseProgram(shader)
         glUniformMatrix4fv(glGetUniformLocation(shader, "view"), 1, GL_FALSE, glm.value_ptr(view))
         glUniformMatrix4fv(glGetUniformLocation(shader, "projection"), 1, GL_FALSE, glm.value_ptr(projection))
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap_texture)
 
         for obj in objects.values():
             model_loc = glGetUniformLocation(shader, "model")

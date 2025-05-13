@@ -1,7 +1,7 @@
 #version 330 core
-
-uniform vec4 color;
-
-void main(){
-	gl_FragColor = color;
+in vec2 texcoord;
+out vec4 out_color;
+uniform sampler2D tex;
+void main() {
+    out_color = texture(tex, texcoord);
 }

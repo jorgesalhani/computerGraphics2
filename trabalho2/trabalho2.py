@@ -306,7 +306,6 @@ def main():
         'gate': ObjectLoad("objects/gate2/Japanese_Torii_Gate.obj"),
         'temple': ObjectLoad("objects/temple/Japanese_Temple.obj"),
         'buddha': ObjectLoad("objects/buddha/SM_Buddha.obj"),
-
     }
 
     objects['boxSky'].scale(149,149,149)

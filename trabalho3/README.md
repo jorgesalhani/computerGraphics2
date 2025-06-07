@@ -1,7 +1,7 @@
-## Execução de estudo : iluminação
+## Execução de Trabalho 3 : iluminação
 
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
-python ./multiple_lights.py
+python ./trabalho3.py
 ```

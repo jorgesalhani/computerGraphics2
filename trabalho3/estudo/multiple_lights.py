@@ -11,11 +11,39 @@ from camera import Camera, Camera_Movement
 
 import platform, ctypes, os
 
+def load_obj_model(filepath):
+    positions = []
+    texcoords = []
+    normals = []
+    vertices = []
+
+    with open(filepath, "r") as f:
+        for line in f:
+            if line.startswith("v "):  # Vertex position
+                parts = line.strip().split()[1:]
+                positions.append([float(p) for p in parts])
+            elif line.startswith("vt "):  # Texture coordinate
+                parts = line.strip().split()[1:]
+                texcoords.append([float(p) for p in parts])
+            elif line.startswith("vn "):  # Vertex normal
+                parts = line.strip().split()[1:]
+                normals.append([float(p) for p in parts])
+            elif line.startswith("f "):  # Face
+                face = line.strip().split()[1:]
+                for vertex in face:
+                    v_idx, vt_idx, vn_idx = (int(i) if i else 0 for i in vertex.split("/"))
+                    pos = positions[v_idx - 1]
+                    tex = texcoords[vt_idx - 1]
+                    norm = normals[vn_idx - 1]
+                    vertices.extend(pos + norm + tex)
+
+    return glm.array(glm.float32, *vertices)
+
 # the relative path where the textures are located
 IMAGE_RESOURCE_PATH = "./texturas/"
 
 # function that loads and automatically flips an image vertically
-LOAD_IMAGE = lambda name: Image.open(os.path.join(IMAGE_RESOURCE_PATH, name)).transpose(Image.FLIP_TOP_BOTTOM)
+LOAD_IMAGE = lambda name: Image.open(name).transpose(Image.FLIP_TOP_BOTTOM)
 
 # settings
 SCR_WIDTH = 800
@@ -74,64 +102,8 @@ def main() -> int:
     lightCubeShader = Shader("6.light_cube.vs", "6.light_cube.fs")
     # set up vertex data (and buffer(s)) and configure vertex attributes
     # ------------------------------------------------------------------
-    vertices = glm.array(glm.float32,
-        # positions          # normals           # texture coords
-        -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,  0.0,  0.0,
-         0.5, -0.5, -0.5,  0.0,  0.0, -1.0,  1.0,  0.0,
-         0.5,  0.5, -0.5,  0.0,  0.0, -1.0,  1.0,  1.0,
-         0.5,  0.5, -0.5,  0.0,  0.0, -1.0,  1.0,  1.0,
-        -0.5,  0.5, -0.5,  0.0,  0.0, -1.0,  0.0,  1.0,
-        -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,  0.0,  0.0,
-
-        -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,  0.0,  0.0,
-         0.5, -0.5,  0.5,  0.0,  0.0,  1.0,  1.0,  0.0,
-         0.5,  0.5,  0.5,  0.0,  0.0,  1.0,  1.0,  1.0,
-         0.5,  0.5,  0.5,  0.0,  0.0,  1.0,  1.0,  1.0,
-        -0.5,  0.5,  0.5,  0.0,  0.0,  1.0,  0.0,  1.0,
-        -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,  0.0,  0.0,
-
-        -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,  1.0,  0.0,
-        -0.5,  0.5, -0.5, -1.0,  0.0,  0.0,  1.0,  1.0,
-        -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,  0.0,  1.0,
-        -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,  0.0,  1.0,
-        -0.5, -0.5,  0.5, -1.0,  0.0,  0.0,  0.0,  0.0,
-        -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,  1.0,  0.0,
-
-         0.5,  0.5,  0.5,  1.0,  0.0,  0.0,  1.0,  0.0,
-         0.5,  0.5, -0.5,  1.0,  0.0,  0.0,  1.0,  1.0,
-         0.5, -0.5, -0.5,  1.0,  0.0,  0.0,  0.0,  1.0,
-         0.5, -0.5, -0.5,  1.0,  0.0,  0.0,  0.0,  1.0,
-         0.5, -0.5,  0.5,  1.0,  0.0,  0.0,  0.0,  0.0,
-         0.5,  0.5,  0.5,  1.0,  0.0,  0.0,  1.0,  0.0,
-
-        -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,  0.0,  1.0,
-         0.5, -0.5, -0.5,  0.0, -1.0,  0.0,  1.0,  1.0,
-         0.5, -0.5,  0.5,  0.0, -1.0,  0.0,  1.0,  0.0,
-         0.5, -0.5,  0.5,  0.0, -1.0,  0.0,  1.0,  0.0,
-        -0.5, -0.5,  0.5,  0.0, -1.0,  0.0,  0.0,  0.0,
-        -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,  0.0,  1.0,
-
-        -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  0.0,  1.0,
-         0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  1.0,  1.0,
-         0.5,  0.5,  0.5,  0.0,  1.0,  0.0,  1.0,  0.0,
-         0.5,  0.5,  0.5,  0.0,  1.0,  0.0,  1.0,  0.0,
-        -0.5,  0.5,  0.5,  0.0,  1.0,  0.0,  0.0,  0.0,
-        -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  0.0,  1.0
-    )
-
-    # positions all containers
-    cubePositions = [
-        glm.vec3( 0.0,  0.0,  0.0),
-        glm.vec3( 2.0,  5.0, -15.0),
-        glm.vec3(-1.5, -2.2, -2.5),
-        glm.vec3(-3.8, -2.0, -12.3),
-        glm.vec3( 2.4, -0.4, -3.5),
-        glm.vec3(-1.7,  3.0, -7.5),
-        glm.vec3( 1.3, -2.0, -2.5),
-        glm.vec3( 1.5,  2.0, -2.5),
-        glm.vec3( 1.5,  0.2, -1.5),
-        glm.vec3(-1.3,  1.0, -1.5)
-    ]
+    model_path = "./objects/cube/cube.obj"  # <- your .obj file
+    vertices = load_obj_model(model_path)
 
     # positions of the point lights
     pointLightPositions = [
@@ -167,8 +139,8 @@ def main() -> int:
 
     # load textures (we now use a utility function to keep the code more organized)
     # -----------------------------------------------------------------------------
-    diffuseMap = loadTexture("container2.png")
-    specularMap = loadTexture("container2_specular.png")
+    diffuseMap = loadTexture("./objects/cube/Textures/container2.png")
+    specularMap = loadTexture("./objects/cube/Textures/container2_specular.png")
 
     # shader configuration
     # --------------------
@@ -275,16 +247,11 @@ def main() -> int:
 
         # render containers
         glBindVertexArray(cubeVAO)
-        for i in range(10):
 
-            # calculate the model matrix for each object and pass it to shader before drawing
-            model = glm.mat4(1.0)
-            model = glm.translate(model, cubePositions[i])
-            angle = 20.0 * i
-            model = glm.rotate(model, glm.radians(angle), glm.vec3(1.0, 0.3, 0.5))
-            lightingShader.setMat4("model", model)
+        # calculate the model matrix for each object and pass it to shader before drawing
+        lightingShader.setMat4("model", model)
 
-            glDrawArrays(GL_TRIANGLES, 0, 36)
+        glDrawArrays(GL_TRIANGLES, 0, 36)
 
         # also draw the lamp object(s)
         lightCubeShader.use()

@@ -3,3 +3,14 @@ Course on [Computer Graphics](https://uspdigital.usp.br/jupiterweb/obterDiscipli
 
 ## Trabalho 1
 [Shaders e transformações básicas](https://github.com/jorgesalhani/computerGraphics2/tree/main/trabalho1)
+
+## Trabalho 2
+[View, Projection e multiplos objetos](https://github.com/jorgesalhani/computerGraphics2/tree/main/trabalho2)
+
+## Trabalho 3
+[View, Projection e multiplos objetos](https://github.com/jorgesalhani/computerGraphics2/tree/main/trabalho2)
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+python ./multiple_lights.py
+```

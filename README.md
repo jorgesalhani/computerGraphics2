@@ -8,4 +8,4 @@ Course on [Computer Graphics](https://uspdigital.usp.br/jupiterweb/obterDiscipli
 [View, Projection e multiplos objetos](https://github.com/jorgesalhani/computerGraphics2/tree/main/trabalho2)
 
 ## Trabalho 3
-[View, Projection e multiplos objetos](https://github.com/jorgesalhani/computerGraphics2/tree/main/trabalho3)
+[Iluminação](https://github.com/jorgesalhani/computerGraphics2/tree/main/trabalho3)

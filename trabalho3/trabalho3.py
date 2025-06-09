@@ -10,34 +10,8 @@ from shader_m import Shader
 from camera import Camera, Camera_Movement
 
 import platform, ctypes, os
-
-def loadTexture(path: str) -> int:
-    textureID = glGenTextures(1)
-    try:
-        img = LOAD_IMAGE(path)
-
-        nrComponents = len(img.getbands())
-
-        format = GL_RED if nrComponents == 1 else \
-                 GL_RGB if nrComponents == 3 else \
-                 GL_RGBA 
-
-        glBindTexture(GL_TEXTURE_2D, textureID)
-        glTexImage2D(GL_TEXTURE_2D, 0, format, img.width, img.height, 0, format, GL_UNSIGNED_BYTE, img.tobytes())
-        glGenerateMipmap(GL_TEXTURE_2D)
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-
-        img.close()
-
-    except:
-
-        print("Texture failed to load at path: " + path)
-
-    return textureID
+import math
+import numpy as np
 
 def load_obj_model(filepath):
     positions = []
@@ -77,8 +51,6 @@ def load_obj_model(filepath):
                         vertices.extend(pos + norm + tex)
 
     return glm.array(glm.float32, *vertices)
-
-import math
 
 def compute_model_matrix(angle, r_x, r_y, r_z, t_x, t_y, t_z, s_x, s_y, s_z):
     angle = math.radians(angle)
@@ -162,6 +134,7 @@ class LoadObject:
         glDrawArrays(GL_TRIANGLES, 0, len(self.vertices) // 8)
         glBindVertexArray(0)
 
+
 # the relative path where the textures are located
 IMAGE_RESOURCE_PATH = "./texturas/"
 
@@ -169,11 +142,11 @@ IMAGE_RESOURCE_PATH = "./texturas/"
 LOAD_IMAGE = lambda name: Image.open(name).transpose(Image.FLIP_TOP_BOTTOM)
 
 # settings
-SCR_WIDTH = 1100
-SCR_HEIGHT = 900
+SCR_WIDTH = 800
+SCR_HEIGHT = 600
 
 # camera
-camera = Camera(glm.vec3(0.0, 0.0, 3.0))
+camera = Camera(glm.vec3(0.0, 5.0, 3.0))
 lastX = SCR_WIDTH / 2.0
 lastY = SCR_HEIGHT / 2.0
 firstMouse = True
@@ -185,8 +158,16 @@ lastFrame = 0.0
 # lighting
 lightPos = glm.vec3(1.2, 1.0, 2.0)
 
+enable_ambient = True
+enable_diffuse = True
+enable_specular = True
+
+rotation_angle = 0.0
+light_radius = 10.0
+light_height = 50.0 
+
 def main() -> int:
-    global deltaTime, lastFrame
+    global deltaTime, lastFrame, rotation_angle, light_radius
 
     # glfw: initialize and configure
     # ------------------------------
@@ -225,15 +206,80 @@ def main() -> int:
     lightCubeShader = Shader("6.light_cube.vs", "6.light_cube.fs")
     # set up vertex data (and buffer(s)) and configure vertex attributes
     # ------------------------------------------------------------------
-    model_path = "./objects/cube/cube.obj"  # <- your .obj file
-    vertices = load_obj_model(model_path)
+    vertices = glm.array(glm.float32,
+        # positions          # normals           # texture coords
+        -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,  0.0,  0.0,
+         0.5, -0.5, -0.5,  0.0,  0.0, -1.0,  1.0,  0.0,
+         0.5,  0.5, -0.5,  0.0,  0.0, -1.0,  1.0,  1.0,
+         0.5,  0.5, -0.5,  0.0,  0.0, -1.0,  1.0,  1.0,
+        -0.5,  0.5, -0.5,  0.0,  0.0, -1.0,  0.0,  1.0,
+        -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,  0.0,  0.0,
+
+        -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,  0.0,  0.0,
+         0.5, -0.5,  0.5,  0.0,  0.0,  1.0,  1.0,  0.0,
+         0.5,  0.5,  0.5,  0.0,  0.0,  1.0,  1.0,  1.0,
+         0.5,  0.5,  0.5,  0.0,  0.0,  1.0,  1.0,  1.0,
+        -0.5,  0.5,  0.5,  0.0,  0.0,  1.0,  0.0,  1.0,
+        -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,  0.0,  0.0,
+
+        -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,  1.0,  0.0,
+        -0.5,  0.5, -0.5, -1.0,  0.0,  0.0,  1.0,  1.0,
+        -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,  0.0,  1.0,
+        -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,  0.0,  1.0,
+        -0.5, -0.5,  0.5, -1.0,  0.0,  0.0,  0.0,  0.0,
+        -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,  1.0,  0.0,
+
+         0.5,  0.5,  0.5,  1.0,  0.0,  0.0,  1.0,  0.0,
+         0.5,  0.5, -0.5,  1.0,  0.0,  0.0,  1.0,  1.0,
+         0.5, -0.5, -0.5,  1.0,  0.0,  0.0,  0.0,  1.0,
+         0.5, -0.5, -0.5,  1.0,  0.0,  0.0,  0.0,  1.0,
+         0.5, -0.5,  0.5,  1.0,  0.0,  0.0,  0.0,  0.0,
+         0.5,  0.5,  0.5,  1.0,  0.0,  0.0,  1.0,  0.0,
+
+        -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,  0.0,  1.0,
+         0.5, -0.5, -0.5,  0.0, -1.0,  0.0,  1.0,  1.0,
+         0.5, -0.5,  0.5,  0.0, -1.0,  0.0,  1.0,  0.0,
+         0.5, -0.5,  0.5,  0.0, -1.0,  0.0,  1.0,  0.0,
+        -0.5, -0.5,  0.5,  0.0, -1.0,  0.0,  0.0,  0.0,
+        -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,  0.0,  1.0,
+
+        -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  0.0,  1.0,
+         0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  1.0,  1.0,
+         0.5,  0.5,  0.5,  0.0,  1.0,  0.0,  1.0,  0.0,
+         0.5,  0.5,  0.5,  0.0,  1.0,  0.0,  1.0,  0.0,
+        -0.5,  0.5,  0.5,  0.0,  1.0,  0.0,  0.0,  0.0,
+        -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  0.0,  1.0
+    )
 
     # positions of the point lights
     pointLightPositions = [
-        glm.vec3( 0.7,  0.2,  2.0),
-        glm.vec3( 2.3, -3.3, -4.0),
-        glm.vec3(-4.0,  2.0, -12.0),
-        glm.vec3( 0.0,  0.0, -3.0)
+        # buddha
+        glm.vec3( 65,  50.0,  65),
+
+        # templo
+        glm.vec3( 8.0,  16.0, -38.0),
+        glm.vec3( -8.0,  16.0, -38.0),
+        glm.vec3( 10.0,  8.0, -40.0),
+        glm.vec3( -10.0,  8.0, -40.0),
+
+        glm.vec3( 8.0,  16.0, -22.0),
+        glm.vec3( -8.0,  16.0, -22.0),
+        glm.vec3( 10.0,  8.0, -20.0),
+        glm.vec3( -10.0,  8.0, -20.0),
+
+        # entrada
+
+        glm.vec3( -3.0,  3.0, -5.0),
+        glm.vec3( 3.0,  3.0, -5.0),
+
+        glm.vec3( -3.0,  3.0, 20.0),
+        glm.vec3( 3.0,  3.0, 20.0),
+
+        glm.vec3( -4.0,  6.0, 16.2),
+        glm.vec3( 4.0,  6.0, 16.2),
+
+        glm.vec3( -4.0,  6.0, 24.0),
+        glm.vec3( 4.0,  6.0, 24.0),
     ]
 
     # first, configure the cube's VAO (and VBO)
@@ -260,6 +306,9 @@ def main() -> int:
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * glm.sizeof(glm.float32), None)
     glEnableVertexAttribArray(0)
 
+    # load textures (we now use a utility function to keep the code more organized)
+    # -----------------------------------------------------------------------------
+
     # shader configuration
     # --------------------
     lightingShader.use()
@@ -267,20 +316,24 @@ def main() -> int:
     lightingShader.setInt("material.specular", 1)
 
     objects = {
-        'boxGround': LoadObject("./objects/cube/cube.obj", "./objects/cube/Textures/green_grass.jpg", "./objects/cube/Textures/green_grass_specular.jpg"),
-        'box1': LoadObject("./objects/cube/cube.obj", "./objects/cube/Textures/container2.png","./objects/cube/Textures/container2_specular.png"),
-        'box2': LoadObject("./objects/cube/cube.obj", "./objects/cube/Textures/container2.png","./objects/cube/Textures/container2_specular.png"),
-        'house': LoadObject("./objects/house/Cottage_FREE.obj", './objects/house/Textures/Cottage_Clean_Base_Color.png', './objects/house/Textures/Cottage_Clean_Base_Color.png'),
+        'boxGround': LoadObject("./objects/cube/cube.obj", "./objects/cube/Textures/container2.png", "./objects/cube/Textures/container2_specular.png"),
+        'boxFloor': LoadObject("./objects/cube/cube.obj", "./objects/cube/Textures/container2.png","./objects/cube/Textures/container2_specular.png"),
+        'temple': LoadObject("./objects/temple/Japanese_Temple.obj", './objects/temple/Textures/Japanese_Temple_Paint2.png', './objects/temple/Textures/Japanese_Temple_Paint2_specular.png'),
         'gate': LoadObject("./objects/gate/Japanese_Torii_Gate.obj", "./objects/gate/Textures/Material.001_Base_color.png","./objects/gate/Textures/internal_ground_ao_texture.jpeg"),
+        'buddha': LoadObject("./objects/buddha/SM_Buddha.obj", "./objects/buddha/Textures/Buddha_low_DefaultMaterial_BaseColor.png","./objects/buddha/Textures/Buddha_low_DefaultMaterial_Roughness.png"),
     }
 
-    objects['box1'].scale(2,2,2)
-    objects['box2'].scale(0.5,0.5,2)
-    objects['box2'].move(2)
-    objects['boxGround'].scale(149, 1, 149)
-    objects['boxGround'].move(y=-2)
+    # objects['box1'].scale(2,2,2)
+    objects['boxFloor'].scale(20,.5,20)
+    objects['boxFloor'].move(y=3.3,x=0.1,z=-30)
+    objects['boxGround'].scale(149, 0.01, 149)
     objects['gate'].scale(15, 15, 15)
     objects['gate'].move(z=20)
+    objects['temple'].scale(1.5, 1.5, 1.5)
+    objects['temple'].move(z=-30)
+    objects['buddha'].scale(20, 20, 20)
+    objects['buddha'].rotate(180, axis='y')
+    objects['buddha'].move(z=60)
 
 
     # render loop
@@ -293,9 +346,18 @@ def main() -> int:
         deltaTime = currentFrame - lastFrame
         lastFrame = currentFrame
 
+        buddha_center = 65
+        rotation_angle += deltaTime * 0.5  
+        x = light_radius * math.sin(rotation_angle)
+        z = buddha_center + light_radius * math.cos(rotation_angle)
+
+        pointLightPositions[0] = glm.vec3(x, light_height, z)
+        print(pointLightPositions[0])
+
         # input
         # -----
         processInput(window)
+        glfwSetKeyCallback(window, key_callback)
 
         # render
         # ------
@@ -313,43 +375,35 @@ def main() -> int:
         #   by defining light types as classes and set their values in there, or by using a more efficient uniform approach
         #   by using 'Uniform buffer objects', but that is something we'll discuss in the 'Advanced GLSL' tutorial.
            
-        # directional light
-        lightingShader.setVec3("dirLight.direction", -0.2, -1.0, -0.3)
-        lightingShader.setVec3("dirLight.ambient", 0.05, 0.05, 0.05)
-        lightingShader.setVec3("dirLight.diffuse", 0.4, 0.4, 0.4)
-        lightingShader.setVec3("dirLight.specular", 0.5, 0.5, 0.5)
+        # # directional light
+        # lightingShader.setVec3("dirLight.direction", -0.2, -1.0, -0.3)
+        # lightingShader.setVec3("dirLight.ambient", 0.05, 0.05, 0.05)
+        # lightingShader.setVec3("dirLight.diffuse", 0.4, 0.4, 0.4)
+        # lightingShader.setVec3("dirLight.specular", 0.5, 0.5, 0.5)
+
+        
+        ambient_color = glm.vec3(0.0) 
+        if enable_ambient:
+            ambient_color = glm.vec3(0.05) 
+        
+        diffuse_color = glm.vec3(0.0)
+        if enable_diffuse:
+            diffuse_color = glm.vec3(0.7)
+        
+        specular_color = glm.vec3(0) 
+        if enable_specular:
+            specular_color = glm.vec3(1.0)
+
         # point light 1
-        lightingShader.setVec3("pointLights[0].position", pointLightPositions[0])
-        lightingShader.setVec3("pointLights[0].ambient", 0.05, 0.05, 0.05)
-        lightingShader.setVec3("pointLights[0].diffuse", 0.8, 0.8, 0.8)
-        lightingShader.setVec3("pointLights[0].specular", 1.0, 1.0, 1.0)
-        lightingShader.setFloat("pointLights[0].constant", 1.0)
-        lightingShader.setFloat("pointLights[0].linear", 0.09)
-        lightingShader.setFloat("pointLights[0].quadratic", 0.032)
-        # point light 2
-        lightingShader.setVec3("pointLights[1].position", pointLightPositions[1])
-        lightingShader.setVec3("pointLights[1].ambient", 0.05, 0.05, 0.05)
-        lightingShader.setVec3("pointLights[1].diffuse", 0.8, 0.8, 0.8)
-        lightingShader.setVec3("pointLights[1].specular", 1.0, 1.0, 1.0)
-        lightingShader.setFloat("pointLights[1].constant", 1.0)
-        lightingShader.setFloat("pointLights[1].linear", 0.09)
-        lightingShader.setFloat("pointLights[1].quadratic", 0.032)
-        # point light 3
-        lightingShader.setVec3("pointLights[2].position", pointLightPositions[2])
-        lightingShader.setVec3("pointLights[2].ambient", 0.05, 0.05, 0.05)
-        lightingShader.setVec3("pointLights[2].diffuse", 0.8, 0.8, 0.8)
-        lightingShader.setVec3("pointLights[2].specular", 1.0, 1.0, 1.0)
-        lightingShader.setFloat("pointLights[2].constant", 1.0)
-        lightingShader.setFloat("pointLights[2].linear", 0.09)
-        lightingShader.setFloat("pointLights[2].quadratic", 0.032)
-        # point light 4
-        lightingShader.setVec3("pointLights[3].position", pointLightPositions[3])
-        lightingShader.setVec3("pointLights[3].ambient", 0.05, 0.05, 0.05)
-        lightingShader.setVec3("pointLights[3].diffuse", 0.8, 0.8, 0.8)
-        lightingShader.setVec3("pointLights[3].specular", 1.0, 1.0, 1.0)
-        lightingShader.setFloat("pointLights[3].constant", 1.0)
-        lightingShader.setFloat("pointLights[3].linear", 0.09)
-        lightingShader.setFloat("pointLights[3].quadratic", 0.032)
+        for i in range(len(pointLightPositions)):
+            lightingShader.setVec3(f"pointLights[{i}].position", pointLightPositions[i])
+            lightingShader.setVec3(f"pointLights[{i}].ambient", ambient_color)
+            lightingShader.setVec3(f"pointLights[{i}].diffuse", diffuse_color)
+            lightingShader.setVec3(f"pointLights[{i}].specular", specular_color)
+            lightingShader.setFloat(f"pointLights[{i}].constant", 1.0)
+            lightingShader.setFloat(f"pointLights[{i}].linear", 0.09)
+            lightingShader.setFloat(f"pointLights[{i}].quadratic", 0.032)
+        
         # spotLight
         # lightingShader.setVec3("spotLight.position", camera.Position)
         # lightingShader.setVec3("spotLight.direction", camera.Front)
@@ -368,6 +422,10 @@ def main() -> int:
         lightingShader.setMat4("projection", projection)
         lightingShader.setMat4("view", view)
 
+        # world transformation
+        model = glm.mat4(1.0)
+        lightingShader.setMat4("model", model)
+
         for obj in objects.values():
             model = obj.model
             lightingShader.setMat4("model", model)
@@ -380,13 +438,12 @@ def main() -> int:
 
         # we now draw as many light bulbs as we have point lights.
         glBindVertexArray(lightCubeVAO)
-        for i in range(4):
-
-         model = glm.mat4(1.0)
-         model = glm.translate(model, pointLightPositions[i])
-         model = glm.scale(model, glm.vec3(0.2)) # Make it a smaller cube
-         lightCubeShader.setMat4("model", model)
-         glDrawArrays(GL_TRIANGLES, 0, 36)
+        for i in range(len(pointLightPositions)):
+            model = glm.mat4(1.0)
+            model = glm.translate(model, pointLightPositions[i])
+            model = glm.scale(model, glm.vec3(0.2)) # Make it a smaller cube
+            lightCubeShader.setMat4("model", model)
+            glDrawArrays(GL_TRIANGLES, 0, 36)
 
         # glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         # -------------------------------------------------------------------------------
@@ -452,5 +509,49 @@ def mouse_callback(window: GLFWwindow, xpos: float, ypos: float) -> None:
 def scroll_callback(window: GLFWwindow, xoffset: float, yoffset: float) -> None:
 
     camera.ProcessMouseScroll(yoffset)
+
+# utility function for loading a 2D texture from file
+# ---------------------------------------------------
+def loadTexture(path: str) -> int:
+
+    textureID = glGenTextures(1)
+    
+    try:
+        img = LOAD_IMAGE(path)
+
+        nrComponents = len(img.getbands())
+
+        format = GL_RED if nrComponents == 1 else \
+                 GL_RGB if nrComponents == 3 else \
+                 GL_RGBA 
+
+        glBindTexture(GL_TEXTURE_2D, textureID)
+        glTexImage2D(GL_TEXTURE_2D, 0, format, img.width, img.height, 0, format, GL_UNSIGNED_BYTE, img.tobytes())
+        glGenerateMipmap(GL_TEXTURE_2D)
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+
+        img.close()
+
+    except:
+
+        print("Texture failed to load at path: " + path)
+
+    return textureID
+
+def key_callback(window, key, scancode, action, mods):
+    global enable_ambient, enable_diffuse, enable_specular
+
+    if action == GLFW_PRESS:
+        if key == GLFW_KEY_1:
+            enable_ambient = not enable_ambient
+        elif key == GLFW_KEY_2:
+            enable_diffuse = not enable_diffuse
+        elif key == GLFW_KEY_3:
+            enable_specular = not enable_specular
+
 
 main()

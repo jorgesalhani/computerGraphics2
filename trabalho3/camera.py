@@ -10,11 +10,13 @@ class Camera_Movement(Enum):
     BACKWARD = 2
     LEFT = 3
     RIGHT = 4
+    UP = 5
+    DOWN = 6
 
 # Default camera values
 YAW         = -90.0
 PITCH       =  0.0
-SPEED       =  2.5
+SPEED       =  10
 SENSITIVITY =  0.1
 ZOOM        =  45.0
 
@@ -74,6 +76,10 @@ class Camera:
             self.Position -= self.Right * velocity
         if (direction == Camera_Movement.RIGHT):
             self.Position += self.Right * velocity
+        if (direction == Camera_Movement.UP):
+            self.Position += self.Up * velocity
+        if (direction == Camera_Movement.DOWN):
+            self.Position -= self.Up * velocity
 
     # processes input received from a mouse input system. Expects the offset value in both the x and y direction.
     def ProcessMouseMovement(self, xoffset: float, yoffset: float, constrainPitch: bool = True) -> None:
@@ -103,12 +109,14 @@ class Camera:
             
     # calculates the front vector from the Camera's (updated) Euler Angles
     def updateCameraVectors(self) -> None:
+        
         # calculate the new Front vector
         front = glm.vec3()
         front.x = glm.cos(glm.radians(self.Yaw)) * glm.cos(glm.radians(self.Pitch))
         front.y = glm.sin(glm.radians(self.Pitch))
         front.z = glm.sin(glm.radians(self.Yaw)) * glm.cos(glm.radians(self.Pitch))
         self.Front = glm.normalize(front)
+        #print(self.Position)
         # also re-calculate the Right and Up vector
         self.Right = glm.normalize(glm.cross(self.Front, self.WorldUp))  # normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
         self.Up    = glm.normalize(glm.cross(self.Right, self.Front))

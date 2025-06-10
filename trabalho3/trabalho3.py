@@ -253,33 +253,39 @@ def main() -> int:
 
     # positions of the point lights
     pointLightPositions = [
+        # ambient
+        glm.vec3( 140,  140, 140),
+        glm.vec3( -140,  140,  140),
+        glm.vec3( 140,  140,  -140),
+        glm.vec3( -140,  140,  -140),
+
         # buddha
         glm.vec3( 65,  50.0,  65),
 
         # templo
-        glm.vec3( 8.0,  16.0, -38.0),
-        glm.vec3( -8.0,  16.0, -38.0),
+        glm.vec3( 4.49172, 9, -24.85),
+        glm.vec3( -4.49172, 9, -24.85),
         glm.vec3( 10.0,  8.0, -40.0),
         glm.vec3( -10.0,  8.0, -40.0),
 
-        glm.vec3( 8.0,  16.0, -22.0),
-        glm.vec3( -8.0,  16.0, -22.0),
+        glm.vec3( 5, 19.3, -24.3),
+        glm.vec3( -5, 19.3, -24.3),
         glm.vec3( 10.0,  8.0, -20.0),
         glm.vec3( -10.0,  8.0, -20.0),
 
         # entrada
 
-        glm.vec3( -3.0,  3.0, -5.0),
-        glm.vec3( 3.0,  3.0, -5.0),
+        glm.vec3( -3.8,  4.2, -5.0),
+        glm.vec3( 3.8,  4.2, -5.0),
 
-        glm.vec3( -3.0,  3.0, 20.0),
-        glm.vec3( 3.0,  3.0, 20.0),
+        glm.vec3( -6.5,  17.2, 20.0),
+        glm.vec3( 6.5,  17.2, 20.0),
 
-        glm.vec3( -4.0,  6.0, 16.2),
-        glm.vec3( 4.0,  6.0, 16.2),
+        glm.vec3( -3.8,  4.2, 14),
+        glm.vec3( 3.8,  4.2, 14),
 
-        glm.vec3( -4.0,  6.0, 24.0),
-        glm.vec3( 4.0,  6.0, 24.0),
+        glm.vec3( -3.8,  4.2, 30.0),
+        glm.vec3( 3.8,  4.2, 30.0),
     ]
 
     # first, configure the cube's VAO (and VBO)
@@ -316,17 +322,65 @@ def main() -> int:
     lightingShader.setInt("material.specular", 1)
 
     objects = {
-        'boxGround': LoadObject("./objects/cube/cube.obj", "./objects/cube/Textures/container2.png", "./objects/cube/Textures/container2_specular.png"),
-        'boxFloor': LoadObject("./objects/cube/cube.obj", "./objects/cube/Textures/container2.png","./objects/cube/Textures/container2_specular.png"),
+        'boxSky': LoadObject("./objects/cube/cube.obj", "./objects/cube/Textures/sky.png", "./objects/cube/Textures/container2_specular.png"),
+        'boxFloor': LoadObject("./objects/cube/cube.obj", "./objects/cube/Textures/container2.png", "./objects/cube/Textures/container2_specular.png"),
+        'boxGround': LoadObject("./objects/cube/cube.obj", "./objects/cube/Textures/green_grass.jpg","./objects/cube/Textures/green_grass_specular.jpg"),
         'temple': LoadObject("./objects/temple/Japanese_Temple.obj", './objects/temple/Textures/Japanese_Temple_Paint2.png', './objects/temple/Textures/Japanese_Temple_Paint2_specular.png'),
         'gate': LoadObject("./objects/gate/Japanese_Torii_Gate.obj", "./objects/gate/Textures/Material.001_Base_color.png","./objects/gate/Textures/internal_ground_ao_texture.jpeg"),
         'buddha': LoadObject("./objects/buddha/SM_Buddha.obj", "./objects/buddha/Textures/Buddha_low_DefaultMaterial_BaseColor.png","./objects/buddha/Textures/Buddha_low_DefaultMaterial_Roughness.png"),
-    }
+        'sconce': LoadObject("./objects/Wall_Sconce/Wall_Sconce.obj", "./objects/Wall_Sconce/Textures/Wall_Sconce_BaseColor_4k.png","./objects/Wall_Sconce/Textures/Wall_Sconce_Roughness_4k.png"),
+        'sconce2': LoadObject("./objects/Wall_Sconce/Wall_Sconce.obj", "./objects/Wall_Sconce/Textures/Wall_Sconce_BaseColor_4k.png","./objects/Wall_Sconce/Textures/Wall_Sconce_Roughness_4k.png"),
+        'sconce3': LoadObject("./objects/Wall_Sconce/Wall_Sconce.obj", "./objects/Wall_Sconce/Textures/Wall_Sconce_BaseColor_4k.png","./objects/Wall_Sconce/Textures/Wall_Sconce_Roughness_4k.png"),
+        'sconce4': LoadObject("./objects/Wall_Sconce/Wall_Sconce.obj", "./objects/Wall_Sconce/Textures/Wall_Sconce_BaseColor_4k.png","./objects/Wall_Sconce/Textures/Wall_Sconce_Roughness_4k.png"),
+        'table': LoadObject("./objects/table/simple-table.obj", "./objects/table/Textures/lambert1_Base_Color.png","./objects/table/Textures/lambert1_Roughness.png"),
+        'pillow': LoadObject("./objects/pillow/Pillow1.obj", "./objects/pillow/Textures/FabricDenim001_COL_VAR1_1K.jpg","./objects/pillow/Textures/GraphicDesignWallpaperEclectic26_VAR2_1K.png"),
+        'lantern': LoadObject("./objects/lantern/lantern.obj", "./objects/lantern/Textures/Stone_Lantern_Stone_Lantern_BaseColor.png","./objects/lantern/Textures/Stone_Lantern_Stone_Lantern_OcclusionRoughnessMetallic.png"),
+        'lantern2': LoadObject("./objects/lantern/lantern.obj", "./objects/lantern/Textures/Stone_Lantern_Stone_Lantern_BaseColor.png","./objects/lantern/Textures/Stone_Lantern_Stone_Lantern_OcclusionRoughnessMetallic.png"),
+        'lantern3': LoadObject("./objects/lantern/lantern.obj", "./objects/lantern/Textures/Stone_Lantern_Stone_Lantern_BaseColor.png","./objects/lantern/Textures/Stone_Lantern_Stone_Lantern_OcclusionRoughnessMetallic.png"),
+        'lantern4': LoadObject("./objects/lantern/lantern.obj", "./objects/lantern/Textures/Stone_Lantern_Stone_Lantern_BaseColor.png","./objects/lantern/Textures/Stone_Lantern_Stone_Lantern_OcclusionRoughnessMetallic.png"),
+        'lantern5': LoadObject("./objects/lantern/lantern.obj", "./objects/lantern/Textures/Stone_Lantern_Stone_Lantern_BaseColor.png","./objects/lantern/Textures/Stone_Lantern_Stone_Lantern_OcclusionRoughnessMetallic.png"),
+        'lantern6': LoadObject("./objects/lantern/lantern.obj", "./objects/lantern/Textures/Stone_Lantern_Stone_Lantern_BaseColor.png","./objects/lantern/Textures/Stone_Lantern_Stone_Lantern_OcclusionRoughnessMetallic.png"),
+        }
 
-    # objects['box1'].scale(2,2,2)
+
+    objects['table'].move(y=3.2,z=-31)
+    objects['table'].scale(.02,.02,.02)
+    objects['pillow'].move(y=3.8,z=-33)
+
+    objects['lantern'].scale(5, 5, 5)
+    objects['lantern'].move(x=-3.8, z=-5.0)
+    objects['lantern2'].scale(5, 5, 5)
+    objects['lantern2'].move(x=3.8, z=-5.0)
+    objects['lantern3'].scale(5, 5, 5)
+    objects['lantern3'].move(x=-3.8, z=14)
+    objects['lantern4'].scale(5, 5, 5)
+    objects['lantern4'].move(x=3.8, z=14)
+    objects['lantern5'].scale(5, 5, 5)
+    objects['lantern5'].move(x=-3.8, z=30)
+    objects['lantern6'].scale(5, 5, 5)
+    objects['lantern6'].move(x=3.8, z=30)
+
+    objects['sconce'].scale(2,2,2)
+    objects['sconce'].move(x=-4.49172, y=8,z=-24.85)
+    objects['sconce'].rotate(90, axis='y')
+
+    objects['sconce2'].scale(2,2,2)
+    objects['sconce2'].move(x=4.49172, y=8,z=-24.85)
+    objects['sconce2'].rotate(90, axis='y')
+
+    objects['sconce3'].scale(2,2,2)
+    objects['sconce3'].move(x=-5, y=18.3,z=-24.3)
+    objects['sconce3'].rotate(-90, axis='y')
+
+    objects['sconce4'].scale(2,2,2)
+    objects['sconce4'].move(x=5, y=18.3,z=-24.3)
+    objects['sconce4'].rotate(-90, axis='y')
+
     objects['boxFloor'].scale(20,.5,20)
     objects['boxFloor'].move(y=3.3,x=0.1,z=-30)
     objects['boxGround'].scale(149, 0.01, 149)
+    objects['boxSky'].scale(150, 150, 150)
+
     objects['gate'].scale(15, 15, 15)
     objects['gate'].move(z=20)
     objects['temple'].scale(1.5, 1.5, 1.5)
@@ -352,7 +406,7 @@ def main() -> int:
         z = buddha_center + light_radius * math.cos(rotation_angle)
 
         pointLightPositions[0] = glm.vec3(x, light_height, z)
-        print(pointLightPositions[0])
+        #print(pointLightPositions[0])
 
         # input
         # -----
@@ -476,6 +530,10 @@ def processInput(window: GLFWwindow) -> None:
         camera.ProcessKeyboard(Camera_Movement.LEFT, deltaTime)
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS):
         camera.ProcessKeyboard(Camera_Movement.RIGHT, deltaTime)
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS):
+        camera.ProcessKeyboard(Camera_Movement.UP, deltaTime)
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS):
+        camera.ProcessKeyboard(Camera_Movement.DOWN, deltaTime)
 
 # glfw: whenever the window size changed (by OS or user resize) this callback function executes
 # ---------------------------------------------------------------------------------------------

@@ -328,7 +328,7 @@ def main() -> int:
     objects = {
         'boxSky': LoadObject("./objects/cube/cube.obj", "./objects/cube/Textures/sky.png", "./objects/cube/Textures/container2_specular.png"),
         'boxFloor': LoadObject("./objects/cube/cube.obj", "./objects/cube/Textures/container2.png", "./objects/cube/Textures/container2_specular.png"),
-        'boxGround': LoadObject("./objects/cube/cube.obj", "./objects/cube/Textures/green_grass.jpg","./objects/cube/Textures/green_grass_specular.jpg"),
+        'boxGround': LoadObject("./objects/cube/cube.obj", "./objects/cube/Textures/grama.jpg","./objects/cube/Textures/green_grass_specular.jpg"),
         'temple': LoadObject("./objects/temple/Japanese_Temple.obj", './objects/temple/Textures/Japanese_Temple_Paint2.png', './objects/temple/Textures/Japanese_Temple_Paint2_specular.png'),
         'gate': LoadObject("./objects/gate/Japanese_Torii_Gate.obj", "./objects/gate/Textures/Material.001_Base_color.png","./objects/gate/Textures/internal_ground_ao_texture.jpeg"),
         'buddha': LoadObject("./objects/buddha/SM_Buddha.obj", "./objects/buddha/Textures/Buddha_low_DefaultMaterial_BaseColor.png","./objects/buddha/Textures/Buddha_low_DefaultMaterial_Roughness.png"),
@@ -475,7 +475,7 @@ def main() -> int:
         lightingShader.setFloat("spotLight.outerCutOff", glm.cos(glm.radians(15.0)))     
 
         # view/projection transformations
-        projection = glm.perspective(glm.radians(camera.Zoom), SCR_WIDTH / SCR_HEIGHT, 0.1, 100.0)
+        projection = glm.perspective(glm.radians(camera.Zoom), SCR_WIDTH / SCR_HEIGHT, 0.1, 150.0) # near and far culling
         view = camera.GetViewMatrix()
         lightingShader.setMat4("projection", projection)
         lightingShader.setMat4("view", view)

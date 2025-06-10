@@ -355,7 +355,7 @@ def main():
     
     glfw.set_window_user_pointer(window, objects)
 
-    projection = glm.perspective(glm.radians(45.0), 800/600, 0.1, 300.0)
+    projection = glm.perspective(glm.radians(45.0), 800/600, 0.1, 500.0) #near and far culling
 
     while not glfw.window_should_close(window):
         glfw.poll_events()

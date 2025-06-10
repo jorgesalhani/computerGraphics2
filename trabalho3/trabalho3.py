@@ -155,8 +155,16 @@ firstMouse = True
 deltaTime = 0.0
 lastFrame = 0.0
 
+dt_specular = 1
+dt_diffuse = 1
+dt_ambient = 1
+
 # lighting
 lightPos = glm.vec3(1.2, 1.0, 2.0)
+
+diffuse_light_color = glm.vec3(0.7)
+specular_light_color = glm.vec3(1)
+ambient_light_color = glm.vec3(1)
 
 enable_ambient = True
 enable_diffuse = True
@@ -265,13 +273,9 @@ def main() -> int:
         # templo
         glm.vec3( 4.49172, 9, -24.85),
         glm.vec3( -4.49172, 9, -24.85),
-        glm.vec3( 10.0,  8.0, -40.0),
-        glm.vec3( -10.0,  8.0, -40.0),
 
         glm.vec3( 5, 19.3, -24.3),
         glm.vec3( -5, 19.3, -24.3),
-        glm.vec3( 10.0,  8.0, -20.0),
-        glm.vec3( -10.0,  8.0, -20.0),
 
         # entrada
 
@@ -438,15 +442,15 @@ def main() -> int:
         
         ambient_color = glm.vec3(0.0) 
         if enable_ambient:
-            ambient_color = glm.vec3(0.05) 
+            ambient_color = ambient_light_color
         
         diffuse_color = glm.vec3(0.0)
         if enable_diffuse:
-            diffuse_color = glm.vec3(0.7)
+            diffuse_color = diffuse_light_color
         
         specular_color = glm.vec3(0) 
         if enable_specular:
-            specular_color = glm.vec3(1.0)
+            specular_color = specular_light_color
 
         # point light 1
         for i in range(len(pointLightPositions)):
@@ -601,7 +605,7 @@ def loadTexture(path: str) -> int:
     return textureID
 
 def key_callback(window, key, scancode, action, mods):
-    global enable_ambient, enable_diffuse, enable_specular
+    global enable_ambient, enable_diffuse, enable_specular, diffuse_light_color, specular_light_color, ambient_light_color, dt_specular, dt_diffuse, dt_ambient
 
     if action == GLFW_PRESS:
         if key == GLFW_KEY_1:
@@ -610,6 +614,45 @@ def key_callback(window, key, scancode, action, mods):
             enable_diffuse = not enable_diffuse
         elif key == GLFW_KEY_3:
             enable_specular = not enable_specular
+
+        elif key == GLFW_KEY_U:
+            specular_light_color = glm.vec3(1, 0, 0)
+        elif key == GLFW_KEY_I:
+            specular_light_color = glm.vec3(0, 1, 0)
+        elif key == GLFW_KEY_O:
+            specular_light_color = glm.vec3(0, 0, 1)
+
+        elif key == GLFW_KEY_J:
+            diffuse_light_color = glm.vec3(1, 0, 0)
+        elif key == GLFW_KEY_K:
+            diffuse_light_color = glm.vec3(0, 1, 0)
+        elif key == GLFW_KEY_L:
+            diffuse_light_color = glm.vec3(0, 0, 1)
+
+        elif key == GLFW_KEY_R:
+            diffuse_light_color = glm.vec3(0.7)
+            specular_light_color = glm.vec3(1)
+            ambient_light_color = glm.vec3(1)
+
+        elif key == GLFW_KEY_B:
+            dt_specular -= 0.1
+            diffuse_light_color = glm.vec3(dt_specular, dt_specular, dt_specular)
+        elif key == GLFW_KEY_N:
+            dt_diffuse -= 0.1
+            specular_light_color = glm.vec3(dt_diffuse, dt_diffuse, dt_diffuse)
+        elif key == GLFW_KEY_M:
+            dt_ambient -= 0.1
+            ambient_light_color = glm.vec3(dt_ambient, dt_ambient, dt_ambient)
+
+        elif key == GLFW_KEY_X:
+            dt_specular += 0.1
+            diffuse_light_color = glm.vec3(dt_specular, dt_specular, dt_specular)
+        elif key == GLFW_KEY_C:
+            dt_diffuse += 0.1
+            specular_light_color = glm.vec3(dt_diffuse, dt_diffuse, dt_diffuse)
+        elif key == GLFW_KEY_V:
+            dt_ambient += 0.1
+            ambient_light_color = glm.vec3(dt_ambient, dt_ambient, dt_ambient)
 
 
 main()
